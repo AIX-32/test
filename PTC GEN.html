@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Press to Code Generator</title>
+    <head>
+      <style>
+:root {
+    --primary: #B68AFF;
+    --secondary: #4e3d69;
+    --dark: #292135;
+    --darker: #18141e;
+    --light: #624b85;
+    --accent: #A17AE1; 
+    --warning: #e74c3c; 
+    --success: #2ecc71; 
+}
+
+body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background-color: var(--darker);
+    color: var(--light);
+    margin: 0;
+    padding: 20px;
+    line-height: 1.6;
+}
+
+.container {
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+h2, h3 {
+    color: var(--primary);
+    margin: 1.5rem 0;
+    font-size: 1.8rem;
+}
+
+.card {
+    background: var(--dark);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin: 1rem 0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transition: box-shadow 0.3s ease;
+}
+
+.card:hover {
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
+}
+
+select, input {
+    background: #624b85;
+    color: #fff;
+    border: 1px solid #624b85;
+    border-radius: 6px;
+    padding: 10px 15px;
+    margin: 8px;
+    transition: all 0.3s ease;
+    font-size: 1rem;
+}
+
+select:focus, input:focus {
+    outline: none;
+    border-color: var(--primary);  
+    box-shadow: none; 
+}
+
+button {
+    background-color: var(--primary);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.5s ease;
+    margin: 8px;
+    font-size: 1rem;
+    text-transform: uppercase;
+    font-weight: bold;
+}
+
+button:hover {
+    background-color: var(--accent); 
+    transform: translateY(-4px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+button:active {
+    background-color: var(--secondary);
+    transform: translateY(1px);
+}
+
+.block {
+    background: #765aa2;
+    border-radius: 6px;
+    padding: 12px 20px;
+    margin: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    transition: transform 0.2s ease;
+    font-size: 1.1rem;
+    color: white;
+}
+
+.block button {
+    background: var(--primary);
+    padding: 6px 12px;
+    margin-left: 12px;
+    font-size: 1rem;
+    border-radius: 6px;
+}
+
+.block button:hover {
+    background: var(--primary);
+    transform: translateY(-1px);
+}
+
+.script-output {
+    background: #765aa2;
+    border-radius: 6px;
+    padding: 1.5rem;
+    font-family: 'Courier New', monospace;
+    white-space: pre-wrap;
+    position: relative;
+    min-height: 120px;
+    color: white;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.script-output .copy-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: var(--secondary);
+    border-radius: 6px;
+    padding: 8px;
+    transition: background 0.3s ease;
+}
+
+.script-output .copy-btn:hover {
+    background: var(--accent); 
+}
+
+.param-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: center;
+    margin: 1.5rem 0;
+}
+
+.action-header {
+    display: flex;
+    gap: 1.5rem;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 10px;
+    }
+
+    .card, .block {
+        margin: 1rem 0;
+    }
+
+    button {
+        padding: 10px 20px;
+        font-size: 0.9rem;
+    }
+
+    .param-container {
+        justify-content: flex-start;
+    }
+}
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>PTC Script Generator</h2>
+
+        <div class="card">
+            <div class="action-header">
+                <div>
+                    <label for="action">Select Action:</label>
+                    <select id="action">
+                        <option value="setHealth">Set Health</option>
+                        <option value="setVelocity">Set Velocity</option>
+                        <option value="log">Log Message</option>
+                        <option value="applyMeleeHit">Apply Melee Hit</option>
+                        <option value="attemptApplyDamage">Attempt Apply Damage</option>
+                    </select>
+                </div>
+                <button onclick="addBlock()">Add Block</button>
+            </div>
+
+            <div id="paramFields" class="param-container"></div>
+        </div>
+
+        <div class="card">
+            <h3>Current Blocks:</h3>
+            <div id="blocks"></div>
+        </div>
+
+        <button class="generate-btn" onclick="generateScript()">Generate Script</button>
+
+        <div class="card">
+            <h3>📜 Generated Script</h3>
+            <div class="script-output" id="scriptOutput">
+                <button class="copy-btn" onclick="copyScript()">Copy</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+
+        function copyScript() {
+            const output = document.getElementById("scriptOutput");
+            navigator.clipboard.writeText(output.innerText);
+            alert("Script copied to clipboard!");
+        }
+
+        function generateScript() {
+
+            document.getElementById("scriptOutput").innerText = script;
+            window.scrollTo({
+                top: document.body.scrollHeight,
+                behavior: 'smooth'
+            });
+        }
+
+        document.addEventListener('input', function(e) {
+            if (e.target.type === 'number') {
+                e.target.value = e.target.value.replace(/[^0-9]/g, '');
+            }
+        });
+
+        function updateParamFields() {
+
+            if (action === "setHealth") {
+                paramContainer.innerHTML = `
+                    <div>
+                        <label>Health Value:</label>
+                        <input type="number" id="param1" placeholder="100">
+                    </div>
+                `;
+            }
+
+        }
+
+        function updateBlockList() {
+
+            div.style.cursor = 'pointer';
+            div.addEventListener('mouseenter', () => {
+                div.style.transform = 'scale(1.02)';
+            });
+            div.addEventListener('mouseleave', () => {
+                div.style.transform = 'scale(1)';
+            });
+        }
+
+                let blockList = [];
+
+   function updateParamFields() {
+            const action = document.getElementById("action").value;
+           const paramContainer = document.getElementById("paramFields");
+          paramContainer.innerHTML = "";  
+
+            if (action === "setHealth") {
+                paramContainer.innerHTML = `
+                    <input type="number" id="param1" placeholder="Health Value">
+                `;
+            } else if (action === "setVelocity") {
+                paramContainer.innerHTML = `
+                    <input type="number" id="param1" placeholder="X Velocity">
+                    <input type="number" id="param2" placeholder="Y Velocity">
+                    <input type="number" id="param3" placeholder="Z Velocity">
+                `;
+            } else if (action === "log") {
+                paramContainer.innerHTML = `
+                    <input type="text" id="param1" placeholder="Message">
+                `;
+            } else if (action === "applyMeleeHit") {
+                paramContainer.innerHTML = `
+                    <input type="number" id="param1" placeholder="Hitting Entity ID">
+                    <input type="number" id="param2" placeholder="Hit Entity ID">
+                    <input type="text" id="param3" placeholder="Direction Facing (array)">
+                    <input type="text" id="param4" placeholder="Body Part Hit (optional)">
+                `;
+            } else if (action === "attemptApplyDamage") {
+                paramContainer.innerHTML = `
+                    <input type="number" id="param1" placeholder="Entity ID">
+                    <input type="number" id="param2" placeholder="Hit Entity ID">
+                 <input type="number" id="param3" placeholder="Damage Amount">
+                    <input type="text" id="param4" placeholder="Item Used (optional)">
+                    <input type="text" id="param5" placeholder="Direction of Attack (optional)">
+                    <input type="checkbox" id="param6"> Show Crit Particles
+                `;
+            }
+        }
+
+        function addBlock() {
+            const action = document.getElementById("action").value;
+            let params = [];
+
+            if (action === "setHealth") {
+                params.push(document.getElementById("param1").value);
+            } else if (action === "setVelocity") {
+                params.push(document.getElementById("param1").value, document.getElementById("param2").value, document.getElementById("param3").value);
+            } else if (action === "log") {
+                params.push(document.getElementById("param1").value);
+          }else if (action === "applyMeleeHit") {
+                params.push(document.getElementById("param1").value, document.getElementById("param2").value, document.getElementById("param3").value, document.getElementById("param4").value);
+            } else if (action === "attemptApplyDamage") {
+                params.push(document.getElementById("param1").value, document.getElementById("param2").value, document.getElementById("param3").value, document.getElementById("param4").value, document.getElementById("param5").value, document.getElementById("param6").checked);
+            }
+
+            const block = { type: action, params };
+            blockList.push(block);
+            updateBlockList();
+        }
+
+        function updateBlockList() {
+            const blockContainer = document.getElementById("blocks");
+            blockContainer.innerHTML = "";
+            blockList.forEach((block, index) => {
+                const div = document.createElement("div");
+                div.className = "block";
+                div.innerHTML = `${block.type}(${block.params.join(", ")}) <button onclick="removeBlock(${index})">X</button>`;
+                blockContainer.appendChild(div);
+            });
+        }
+
+        function removeBlock(index) {
+            blockList.splice(index, 1);
+            updateBlockList();
+        }
+
+        function generateScript() {
+            let script = "press to code\n";
+            blockList.forEach(block => {
+                if (block.type === "setHealth") {
+                    script += `api.setHealth(myId, ${block.params[0]})\n`;
+                } else if (block.type === "setVelocity") {
+                    script += `api.setVelocity(myId, ${block.params[0]}, ${block.params[1]}, ${block.params[2]})\n`;
+                } else if (block.type === "log") {
+                    script += `api.log("${block.params[0]}")\n`;
+                } else if (block.type === "applyMeleeHit") {
+                    script += `api.applyMeleeHit(${block.params[0]}, ${block.params[1]}, ${block.params[2]}, ${block.params[3]})\n`;
+                } else if (block.type === "attemptApplyDamage") {
+                    script += `api.attemptApplyDamage({ eId: ${block.params[0]}, hitEId: ${block.params[1]}, attemptedDmgAmt: ${block.params[2]}, withItem: "${block.params[3]}", attackDir: "${block.params[4]}", showCritParticles: ${block.params[5]} })\n`;
+                }
+            });
+
+            document.getElementById("scriptOutput").innerText = script;
+        }
+
+        document.getElementById("action").addEventListener("change", updateParamFields);
+
+        updateParamFields();
+    </script>
+</body>
+</html>
