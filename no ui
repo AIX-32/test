@@ -1,10 +1,11 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
+<!-- saved from url=(0030)https://cyaben.github.io/test/ -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Press to Code Generator</title>
-    <style>
+    
+      <style>
         body { font-family: Arial, sans-serif; text-align: center; }
         .block { margin: 10px; padding: 10px; border: 1px solid #000; display: inline-block; }
         .script-output { margin-top: 20px; white-space: pre-wrap; background: #f4f4f4; padding: 10px; border: 1px solid #ccc; text-align: left; }
@@ -13,25 +14,42 @@
     </style>
 </head>
 <body>
+    <div class="container">
+        <h2>PTC Script Generator</h2>
 
-    <h2>Press to Code Script Generator</h2>
-    
-    <label for="action">Select Action:</label>
-    <select id="action">
-        <option value="setHealth">Set Health</option>
-        <option value="setVelocity">Set Velocity</option>
-        <option value="log">Log Message</option>
-        <option value="applyMeleeHit">Apply Melee Hit</option>
-        <option value="attemptApplyDamage">Attempt Apply Damage</option>
-    </select>
+        <div class="card">
+            <div class="action-header">
+                <div>
+                    <label for="action">Select Action:</label>
+                    <select id="action">
+                        <option value="setHealth">Set Health</option>
+                        <option value="setVelocity">Set Velocity</option>
+                        <option value="log">Log Message</option>
+                        <option value="applyMeleeHit">Apply Melee Hit</option>
+                        <option value="attemptApplyDamage">Attempt Apply Damage</option>
+                    </select>
+                </div>
+                <button onclick="addBlock()">Add Block</button>
+            </div>
 
-    <div id="paramFields" class="param-container"></div>
-    <button onclick="addBlock()">Add Block</button>
-    <h3>Blocks</h3>
-    <div id="blocks"></div>
-    <button onclick="generateScript()">Generate Script</button>
-    <h3>Generated Script</h3>
-    <div id="scriptOutput"></div>
+            <div id="paramFields" class="param-container"><input type="text" id="param1" placeholder="Entity ID">
+                                <input type="number" id="param2" placeholder="Health Value"></div>
+        </div>
+
+        <div class="card">
+            <h3>Current Blocks:</h3>
+            <div id="blocks"></div>
+        </div>
+
+        <button class="generate-btn" onclick="generateScript()">Generate Script</button>
+
+        <div class="card">
+            <h3>📜 Generated Script</h3>
+            <div class="script-output" id="scriptOutput">
+                <button class="copy-btn" onclick="copyScript()">Copy</button>
+            </div>
+        </div>
+    </div>
 
     <script>
         let blockList = [];
@@ -102,7 +120,7 @@ if (action === "setHealth") {
         function generateScript() {
             let scriptLines = [];
             blockList.forEach(block => {
-                let line = `api.${block.type}(${block.params.join(", ")})`;
+                let line = Autoformat(`api.${block.type}(${block.params.join(", ")})`);
                 scriptLines.push(line);
             });
 
@@ -124,7 +142,58 @@ if (action === "setHealth") {
 
         document.getElementById("action").addEventListener("change", updateParamFields);
         updateParamFields();
+
     </script>
 
-</body>
-</html>
+    <script>
+        //Sulfrox's code
+        
+    //puts all the code into an eval() call to eleminate syntax issues
+    function Autoformat(str) {
+        const line_length = 16;
+        //return value
+        let ret = "eval(\"";
+        //number of characters still available for this line
+        let current_line_length=line_length-ret.length;
+        for(let i=0;i<str.length+1;i++) {
+            let char = ""
+            if (i == str.length) {
+                //special occasion: the last two characters are ")
+                char = "\""+")"
+            } else {
+                char = formatChar(str.charAt(i));
+            }
+
+            if (char.length + 1/*length for"\\"*/ > current_line_length) {
+                //new line
+                current_line_length = line_length;
+                //adding a \ before the new line allows the quoted string to continue to the new line
+                ret+="\\"+"\n"
+                //example
+                "first line\
+                second line"
+            }
+            //add the character to the return value
+            ret+=char
+            current_line_length-=char.length
+        }
+        return ret;
+    }
+
+    //hopefully this eleminates any escape character
+    function formatChar(char) {
+        if (char === "\\") {
+            return "\\"+"\\"
+        }
+        if (char === "\n") {
+            return "\\"+"n"
+        }
+        if (char === "\"") {
+            return "\\"+"\""
+        }
+        return char;
+    }
+    </script>
+
+
+</body></html>
