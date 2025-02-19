@@ -343,26 +343,29 @@ button:active {
         }
 
         function generateScript() {
-            let script = "press to code\n";
+            let scriptLines = [];
             blockList.forEach(block => {
-                if (block.type === "setHealth") {
-                    script += `api.setHealth(myId, ${block.params[0]})\n`;
-                } else if (block.type === "setVelocity") {
-                    script += `api.setVelocity(myId, ${block.params[0]}, ${block.params[1]}, ${block.params[2]})\n`;
-                } else if (block.type === "log") {
-                    script += `api.log("${block.params[0]}")\n`;
-                } else if (block.type === "applyMeleeHit") {
-                    script += `api.applyMeleeHit(${block.params[0]}, ${block.params[1]}, ${block.params[2]}, ${block.params[3]})\n`;
-                } else if (block.type === "attemptApplyDamage") {
-                    script += `api.attemptApplyDamage({ eId: ${block.params[0]}, hitEId: ${block.params[1]}, attemptedDmgAmt: ${block.params[2]}, withItem: "${block.params[3]}", attackDir: "${block.params[4]}", showCritParticles: ${block.params[5]} })\n`;
-                }
+                let line = `api.${block.type}(${block.params.join(", ")})`;
+                scriptLines.push(line);
             });
 
-            document.getElementById("scriptOutput").innerText = script;
+            let scripts = [];
+            let currentScript = "press to code\n";
+            scriptLines.forEach(line => {
+                if (currentScript.length + line.length > 96) {
+                    scripts.push(currentScript);
+                    currentScript = "press to code\n";
+                }
+                currentScript += line + "\n";
+            });
+            if (currentScript.trim() !== "press to code") {
+                scripts.push(currentScript);
+            }
+
+            document.getElementById("scriptOutput").innerHTML = scripts.map(s => `<div class='script-output'>${s}</div>`).join("<br>");
         }
 
         document.getElementById("action").addEventListener("change", updateParamFields);
-
         updateParamFields();
     </script>
 </body>
