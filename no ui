@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Press to Code Generator</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; }
+        .block { margin: 10px; padding: 10px; border: 1px solid #000; display: inline-block; }
+        .script-output { margin-top: 20px; white-space: pre-wrap; background: #f4f4f4; padding: 10px; border: 1px solid #ccc; text-align: left; }
+        .param-container { display: flex; justify-content: center; margin-top: 10px; }
+        .param-container input { margin: 0 5px; }
+    </style>
+</head>
+<body>
+
+    <h2>Press to Code Script Generator</h2>
+    
+    <label for="action">Select Action:</label>
+    <select id="action">
+        <option value="setHealth">Set Health</option>
+        <option value="setVelocity">Set Velocity</option>
+        <option value="log">Log Message</option>
+        <option value="applyMeleeHit">Apply Melee Hit</option>
+        <option value="attemptApplyDamage">Attempt Apply Damage</option>
+    </select>
+
+    <div id="paramFields" class="param-container"></div>
+    <button onclick="addBlock()">Add Block</button>
+    <h3>Blocks</h3>
+    <div id="blocks"></div>
+    <button onclick="generateScript()">Generate Script</button>
+    <h3>Generated Script</h3>
+    <div id="scriptOutput"></div>
+
+    <script>
+        let blockList = [];
+
+        function updateParamFields() {
+            const action = document.getElementById("action").value;
+            const paramContainer = document.getElementById("paramFields");
+            paramContainer.innerHTML = "";
+            
+            if (action === "setHealth") {
+    paramContainer.innerHTML = `<input type="text" id="param1" placeholder="Entity ID">
+                                <input type="number" id="param2" placeholder="Health Value">`;
+            } else if (action === "setVelocity") {
+                paramContainer.innerHTML = `<input type="number" id="param1" placeholder="X Velocity">
+                                            <input type="number" id="param2" placeholder="Y Velocity">
+                                            <input type="number" id="param3" placeholder="Z Velocity">`;
+            } else if (action === "log") {
+                paramContainer.innerHTML = `<input type="text" id="param1" placeholder="Message">`;
+            } else if (action === "applyMeleeHit") {
+                paramContainer.innerHTML = `<input type="number" id="param1" placeholder="Hitting Entity ID">
+                                            <input type="number" id="param2" placeholder="Hit Entity ID">
+                                            <input type="text" id="param3" placeholder="Direction Facing (array)">
+                                            <input type="text" id="param4" placeholder="Body Part Hit (optional)">`;
+            } else if (action === "attemptApplyDamage") {
+                paramContainer.innerHTML = `<input type="number" id="param1" placeholder="Entity ID">
+                                            <input type="number" id="param2" placeholder="Hit Entity ID">
+                                            <input type="number" id="param3" placeholder="Damage Amount">
+                                            <input type="text" id="param4" placeholder="Item Used (optional)">
+                                            <input type="text" id="param5" placeholder="Direction of Attack (optional)">
+                                            <input type="checkbox" id="param6"> Show Crit Particles`;
+            }
+        }
+
+        function addBlock() {
+            const action = document.getElementById("action").value;
+            let params = [];
+if (action === "setHealth") {
+    params.push(document.getElementById("param1").value, document.getElementById("param2").value);
+            } else if (action === "setVelocity") {
+                params.push(document.getElementById("param1").value, document.getElementById("param2").value, document.getElementById("param3").value);
+            } else if (action === "log") {
+                params.push(document.getElementById("param1").value);
+            } else if (action === "applyMeleeHit") {
+                params.push(document.getElementById("param1").value, document.getElementById("param2").value, document.getElementById("param3").value, document.getElementById("param4").value);
+            } else if (action === "attemptApplyDamage") {
+                params.push(document.getElementById("param1").value, document.getElementById("param2").value, document.getElementById("param3").value, document.getElementById("param4").value, document.getElementById("param5").value, document.getElementById("param6").checked);
+            }
+            blockList.push({ type: action, params });
+            updateBlockList();
+        }
+
+        function updateBlockList() {
+            const blockContainer = document.getElementById("blocks");
+            blockContainer.innerHTML = "";
+            blockList.forEach((block, index) => {
+                const div = document.createElement("div");
+                div.className = "block";
+                div.innerHTML = `${block.type}(${block.params.join(", ")}) <button onclick="removeBlock(${index})">X</button>`;
+                blockContainer.appendChild(div);
+            });
+        }
+
+        function removeBlock(index) {
+            blockList.splice(index, 1);
+            updateBlockList();
+        }
+
+        function generateScript() {
+            let scriptLines = [];
+            blockList.forEach(block => {
+                let line = `api.${block.type}(${block.params.join(", ")})`;
+                scriptLines.push(line);
+            });
+
+            let scripts = [];
+            let currentScript = "press to code\n";
+            scriptLines.forEach(line => {
+                if (currentScript.length + line.length > 96) {
+                    scripts.push(currentScript);
+                    currentScript = "press to code\n";
+                }
+                currentScript += line + "\n";
+            });
+            if (currentScript.trim() !== "press to code") {
+                scripts.push(currentScript);
+            }
+
+            document.getElementById("scriptOutput").innerHTML = scripts.map(s => `<div class='script-output'>${s}</div>`).join("<br>");
+        }
+
+        document.getElementById("action").addEventListener("change", updateParamFields);
+        updateParamFields();
+    </script>
+
+</body>
+</html>
