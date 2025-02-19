@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
+<!-- saved from url=(0030)https://cyaben.github.io/test/ -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Press to Code Generator</title>
-    <head>
+    
       <style>
 :root {
     --primary: #B68AFF;
@@ -200,7 +200,8 @@ button:active {
                 <button onclick="addBlock()">Add Block</button>
             </div>
 
-            <div id="paramFields" class="param-container"></div>
+            <div id="paramFields" class="param-container"><input type="text" id="param1" placeholder="Entity ID">
+                                <input type="number" id="param2" placeholder="Health Value"></div>
         </div>
 
         <div class="card">
@@ -287,7 +288,7 @@ if (action === "setHealth") {
         function generateScript() {
             let scriptLines = [];
             blockList.forEach(block => {
-                let line = `api.${block.type}(${block.params.join(", ")})`;
+                let line = Autoformat(`api.${block.type}(${block.params.join(", ")})`);
                 scriptLines.push(line);
             });
 
@@ -311,5 +312,56 @@ if (action === "setHealth") {
         updateParamFields();
 
     </script>
-</body>
-</html>
+
+    <script>
+        //Sulfrox's code
+        
+    //puts all the code into an eval() call to eleminate syntax issues
+    function Autoformat(str) {
+        const line_length = 16;
+        //return value
+        let ret = "eval(\"";
+        //number of characters still available for this line
+        let current_line_length=line_length-ret.length;
+        for(let i=0;i<str.length+1;i++) {
+            let char = ""
+            if (i == str.length) {
+                //special occasion: the last two characters are ")
+                char = "\""+")"
+            } else {
+                char = formatChar(str.charAt(i));
+            }
+
+            if (char.length + 1/*length for"\\"*/ > current_line_length) {
+                //new line
+                current_line_length = line_length;
+                //adding a \ before the new line allows the quoted string to continue to the new line
+                ret+="\\"+"\n"
+                //example
+                "first line\
+                second line"
+            }
+            //add the character to the return value
+            ret+=char
+            current_line_length-=char.length
+        }
+        return ret;
+    }
+
+    //hopefully this eleminates any escape character
+    function formatChar(char) {
+        if (char === "\\") {
+            return "\\"+"\\"
+        }
+        if (char === "\n") {
+            return "\\"+"n"
+        }
+        if (char === "\"") {
+            return "\\"+"\""
+        }
+        return char;
+    }
+    </script>
+
+
+</body></html>
