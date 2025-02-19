@@ -219,110 +219,52 @@ button:active {
     </div>
 
     <script>
-
-        function copyScript() {
-            const output = document.getElementById("scriptOutput");
-            navigator.clipboard.writeText(output.innerText);
-            alert("Script copied to clipboard!");
-        }
-
-        function generateScript() {
-
-            document.getElementById("scriptOutput").innerText = script;
-            window.scrollTo({
-                top: document.body.scrollHeight,
-                behavior: 'smooth'
-            });
-        }
-
-        document.addEventListener('input', function(e) {
-            if (e.target.type === 'number') {
-                e.target.value = e.target.value.replace(/[^0-9]/g, '');
-            }
-        });
+        let blockList = [];
 
         function updateParamFields() {
-
-            if (action === "setHealth") {
-                paramContainer.innerHTML = `
-                    <div>
-                        <label>Health Value:</label>
-                        <input type="number" id="param1" placeholder="100">
-                    </div>
-                `;
-            }
-
-        }
-
-        function updateBlockList() {
-
-            div.style.cursor = 'pointer';
-            div.addEventListener('mouseenter', () => {
-                div.style.transform = 'scale(1.02)';
-            });
-            div.addEventListener('mouseleave', () => {
-                div.style.transform = 'scale(1)';
-            });
-        }
-
-                let blockList = [];
-
-   function updateParamFields() {
             const action = document.getElementById("action").value;
-           const paramContainer = document.getElementById("paramFields");
-          paramContainer.innerHTML = "";  
-
+            const paramContainer = document.getElementById("paramFields");
+            paramContainer.innerHTML = "";
+            
             if (action === "setHealth") {
-                paramContainer.innerHTML = `
-                    <input type="number" id="param1" placeholder="Health Value">
-                `;
+    paramContainer.innerHTML = `<input type="text" id="param1" placeholder="Entity ID">
+                                <input type="number" id="param2" placeholder="Health Value">`;
             } else if (action === "setVelocity") {
-                paramContainer.innerHTML = `
-                    <input type="number" id="param1" placeholder="X Velocity">
-                    <input type="number" id="param2" placeholder="Y Velocity">
-                    <input type="number" id="param3" placeholder="Z Velocity">
-                `;
+                paramContainer.innerHTML = `<input type="number" id="param1" placeholder="X Velocity">
+                                            <input type="number" id="param2" placeholder="Y Velocity">
+                                            <input type="number" id="param3" placeholder="Z Velocity">`;
             } else if (action === "log") {
-                paramContainer.innerHTML = `
-                    <input type="text" id="param1" placeholder="Message">
-                `;
+                paramContainer.innerHTML = `<input type="text" id="param1" placeholder="Message">`;
             } else if (action === "applyMeleeHit") {
-                paramContainer.innerHTML = `
-                    <input type="number" id="param1" placeholder="Hitting Entity ID">
-                    <input type="number" id="param2" placeholder="Hit Entity ID">
-                    <input type="text" id="param3" placeholder="Direction Facing (array)">
-                    <input type="text" id="param4" placeholder="Body Part Hit (optional)">
-                `;
+                paramContainer.innerHTML = `<input type="number" id="param1" placeholder="Hitting Entity ID">
+                                            <input type="number" id="param2" placeholder="Hit Entity ID">
+                                            <input type="text" id="param3" placeholder="Direction Facing (array)">
+                                            <input type="text" id="param4" placeholder="Body Part Hit (optional)">`;
             } else if (action === "attemptApplyDamage") {
-                paramContainer.innerHTML = `
-                    <input type="number" id="param1" placeholder="Entity ID">
-                    <input type="number" id="param2" placeholder="Hit Entity ID">
-                 <input type="number" id="param3" placeholder="Damage Amount">
-                    <input type="text" id="param4" placeholder="Item Used (optional)">
-                    <input type="text" id="param5" placeholder="Direction of Attack (optional)">
-                    <input type="checkbox" id="param6"> Show Crit Particles
-                `;
+                paramContainer.innerHTML = `<input type="number" id="param1" placeholder="Entity ID">
+                                            <input type="number" id="param2" placeholder="Hit Entity ID">
+                                            <input type="number" id="param3" placeholder="Damage Amount">
+                                            <input type="text" id="param4" placeholder="Item Used (optional)">
+                                            <input type="text" id="param5" placeholder="Direction of Attack (optional)">
+                                            <input type="checkbox" id="param6"> Show Crit Particles`;
             }
         }
 
         function addBlock() {
             const action = document.getElementById("action").value;
             let params = [];
-
-            if (action === "setHealth") {
-                params.push(document.getElementById("param1").value);
+if (action === "setHealth") {
+    params.push(document.getElementById("param1").value, document.getElementById("param2").value);
             } else if (action === "setVelocity") {
                 params.push(document.getElementById("param1").value, document.getElementById("param2").value, document.getElementById("param3").value);
             } else if (action === "log") {
                 params.push(document.getElementById("param1").value);
-          }else if (action === "applyMeleeHit") {
+            } else if (action === "applyMeleeHit") {
                 params.push(document.getElementById("param1").value, document.getElementById("param2").value, document.getElementById("param3").value, document.getElementById("param4").value);
             } else if (action === "attemptApplyDamage") {
                 params.push(document.getElementById("param1").value, document.getElementById("param2").value, document.getElementById("param3").value, document.getElementById("param4").value, document.getElementById("param5").value, document.getElementById("param6").checked);
             }
-
-            const block = { type: action, params };
-            blockList.push(block);
+            blockList.push({ type: action, params });
             updateBlockList();
         }
 
@@ -367,6 +309,7 @@ button:active {
 
         document.getElementById("action").addEventListener("change", updateParamFields);
         updateParamFields();
+
     </script>
 </body>
 </html>
