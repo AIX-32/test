@@ -1196,16 +1196,64 @@
                 return wrappedLines;
             }
 
+            // Function to check if a function call is complete
+            function isFunctionCallComplete(line) {
+                // Count opening and closing parentheses
+                const openParens = (line.match(/\(/g) || []).length;
+                const closeParens = (line.match(/\)/g) || []).length;
+                return openParens === closeParens;
+            }
+
             // Split the text into boards of maximum 80 characters and 6 lines
             const boards = [];
             let currentBoard = '';
             let currentBoardLineCount = 0;
+            let currentFunctionCall = [];
             
             // Split the text into lines and wrap each line
             const lines = text.split('\n');
             const wrappedLines = lines.flatMap(line => wrapLine(line));
             
             wrappedLines.forEach(line => {
+                // If we're building a multi-line function call
+                if (currentFunctionCall.length > 0) {
+                    currentFunctionCall.push(line);
+                    
+                    // Check if the function call is complete
+                    if (isFunctionCallComplete(currentFunctionCall.join('\n'))) {
+                        // Add the complete function call to the current board
+                        const functionCallText = currentFunctionCall.join('\n');
+                        
+                        // If adding this function call would exceed board limits, start a new board
+                        if (currentBoardLineCount + currentFunctionCall.length > maxLinesPerBoard || 
+                            (currentBoard && currentBoard.length + functionCallText.length + 1 > maxCharsPerBoard)) {
+                            // Add current board if not empty
+                            if (currentBoard.trim()) {
+                                boards.push(currentBoard.trim());
+                            }
+                            currentBoard = functionCallText;
+                            currentBoardLineCount = currentFunctionCall.length;
+                        } else {
+                            // Add to current board
+                            currentBoard += (currentBoard ? '\n' : '') + functionCallText;
+                            currentBoardLineCount += currentFunctionCall.length;
+                        }
+                        
+                        // Reset function call tracking
+                        currentFunctionCall = [];
+                        return;
+                    }
+                    
+                    // If function call is not complete, continue to next line
+                    return;
+                }
+
+                // Start tracking a potential multi-line function call
+                if (!isFunctionCallComplete(line)) {
+                    currentFunctionCall.push(line);
+                    return;
+                }
+
                 // If adding this line would exceed the board line limit or character limit, start a new board
                 if (currentBoardLineCount >= maxLinesPerBoard || 
                     (currentBoard && currentBoard.length + line.length + 1 > maxCharsPerBoard)) {
@@ -1221,6 +1269,13 @@
                     currentBoardLineCount++;
                 }
             });
+            
+            // Add any remaining function call
+            if (currentFunctionCall.length > 0) {
+                const functionCallText = currentFunctionCall.join('\n');
+                currentBoard += (currentBoard ? '\n' : '') + functionCallText;
+                currentBoardLineCount += currentFunctionCall.length;
+            }
             
             // Add the last board if not empty
             if (currentBoard.trim()) {
