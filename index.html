@@ -267,37 +267,88 @@
     </div>
 
     <xml id="toolbox" style="display: none">
-        <category name="Input" colour="#B68AFF">
+        <category name="Input" colour="#df84c0">
             <block type="input_text"></block>
             <block type="text_block"></block>
         </category>
 
-        <category name="Player Health" colour="#B68AFF">
+        <category name="Player Health" colour="#d975b7">
             <block type="set_health"></block>
             <block type="apply_health_change"></block>
             <block type="set_shield_amount"></block>
             <block type="get_shield_amount"></block>
         </category>
 
-        <category name="Combat" colour="#9B6DFF">
+        <category name="Combat" colour="#d367ae">
             <block type="apply_melee_hit"></block>
         </category>
 
-        <category name="Player Info" colour="#7C4DFF">
+        <category name="Player Info" colour="#cd58a5">
             <block type="get_position"></block>
             <block type="get_player_ids"></block>
             <block type="player_is_in_game"></block>
             <block type="player_is_logged_in"></block>
         </category>
 
-        <category name="Block Operations" colour="#B388FF">
+        <category name="Block Operations" colour="#c7499c">
             <block type="get_block_coordinates"></block>
             <block type="get_block_types"></block>
         </category>
 
-        <category name="Game UI" colour="#8E64FF">
+        <category name="Game UI" colour="#c13a93">
             <block type="log_message"></block>
             <block type="show_shop_tutorial"></block>
+        </category>
+
+        <category name="Camera Controls" colour="#bb2c8a">
+            <block type="set_camera_direction"></block>
+            <block type="set_camera_zoom"></block>
+        </category>
+
+        <category name="Player Appearance" colour="#b51d81">
+            <block type="set_player_opacity"></block>
+            <block type="set_player_opacity_for_one"></block>
+            <block type="set_player_pose"></block>
+            <block type="scale_player_mesh_nodes"></block>
+            <block type="update_entity_node_mesh"></block>
+        </category>
+
+        <category name="Block Information" colour="#af0e78">
+            <block type="get_block_coordinates"></block>
+            <block type="get_block_types"></block>
+            <block type="get_block_id"></block>
+            <block type="get_meta_info"></block>
+            <block type="block_name_to_id"></block>
+            <block type="block_id_to_name"></block>
+        </category>
+
+        <category name="Block Manipulation" colour="#a0086e">
+            <block type="set_cant_change_block"></block>
+            <block type="set_cant_change_block_type"></block>
+            <block type="reset_can_change_block_type"></block>
+            <block type="set_walk_through_type"></block>
+            <block type="set_walk_through_rect"></block>
+        </category>
+
+        <category name="World Utilities" colour="#910265">
+            <block type="get_entities_in_rect"></block>
+            <block type="block_coord_to_chunk"></block>
+            <block type="is_block_in_loaded_chunk"></block>
+            <block type="is_inside_rect"></block>
+            <block type="chunk_id_to_bot_left_coord"></block>
+            <block type="raycast_for_block"></block>
+        </category>
+
+        <category name="Inventory" colour="#82015c">
+            <block type="get_selected_inventory_slot"></block>
+            <block type="get_held_item"></block>
+            <block type="get_inventory_free_slots"></block>
+            <block type="get_chest_free_slots"></block>
+            <block type="get_chest_item_amount"></block>
+            <block type="has_item"></block>
+            <block type="remove_item"></block>
+            <block type="clear_inventory"></block>
+            <block type="inventory_is_full"></block>
         </category>
     </xml>
 
@@ -336,7 +387,7 @@
                     { "type": "field_input", "name": "TEXT", "text": "text" }
                 ],
                 "output": "String",
-                "colour": "#B68AFF"
+                "colour": "#df84c0"
             },
             {
                 "type": "text_block",
@@ -346,7 +397,7 @@
                 ],
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": "#B68AFF"
+                "colour": "#df84c0"
             },
             {
                 "type": "set_health",
@@ -357,7 +408,7 @@
                 ],
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": "#B68AFF"
+                "colour": "#d975b7"
             },
             {
                 "type": "log_message",
@@ -367,7 +418,7 @@
                 ],
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": "#8E64FF"
+                "colour": "#c13a93"
             },
             {
                 "type": "apply_melee_hit",
@@ -378,7 +429,7 @@
                 ],
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": "#9B6DFF"
+                "colour": "#d367ae"
             },
             {
                 "type": "get_position",
@@ -387,13 +438,13 @@
                     { "type": "input_value", "name": "ENTITY" }
                 ],
                 "output": "Array",
-                "colour": "#7C4DFF"
+                "colour": "#cd58a5"
             },
             {
                 "type": "get_player_ids",
                 "message0": "Get all player IDs",
                 "output": "Array",
-                "colour": "#7C4DFF"
+                "colour": "#cd58a5"
             },
             {
                 "type": "player_is_in_game",
@@ -402,7 +453,7 @@
                     { "type": "input_value", "name": "PLAYER" }
                 ],
                 "output": "Boolean",
-                "colour": "#7C4DFF"
+                "colour": "#cd58a5"
             },
             {
                 "type": "player_is_logged_in",
@@ -411,25 +462,185 @@
                     { "type": "input_value", "name": "PLAYER" }
                 ],
                 "output": "Boolean",
-                "colour": "#7C4DFF"
+                "colour": "#cd58a5"
             },
             {
                 "type": "get_block_coordinates",
-                "message0": "Get block coordinates of %1",
+                "message0": "Get block coordinates player %1 is standing on",
                 "args0": [
                     { "type": "input_value", "name": "PLAYER" }
                 ],
                 "output": "Array",
-                "colour": "#B388FF"
+                "colour": "#c7499c"
             },
             {
                 "type": "get_block_types",
-                "message0": "Get block types of %1",
+                "message0": "Get block types player %1 is standing on",
                 "args0": [
                     { "type": "input_value", "name": "PLAYER" }
                 ],
                 "output": "Array",
-                "colour": "#B388FF"
+                "colour": "#c7499c"
+            },
+            {
+                "type": "get_block_id",
+                "message0": "Get block ID at x: %1 y: %2 z: %3",
+                "args0": [
+                    { "type": "input_value", "name": "X" },
+                    { "type": "input_value", "name": "Y" },
+                    { "type": "input_value", "name": "Z" }
+                ],
+                "output": "Number",
+                "colour": "#af0e78"
+            },
+            {
+                "type": "get_entities_in_rect",
+                "message0": "Get entities in rectangle from %1 to %2",
+                "args0": [
+                    { "type": "input_value", "name": "MIN_COORDS" },
+                    { "type": "input_value", "name": "MAX_COORDS" }
+                ],
+                "output": "Array",
+                "colour": "#910265"
+            },
+            {
+                "type": "get_meta_info",
+                "message0": "Get meta info for block %1",
+                "args0": [
+                    { "type": "input_value", "name": "BLOCK_NAME" }
+                ],
+                "output": "Object",
+                "colour": "#af0e78"
+            },
+            {
+                "type": "set_cant_change_block",
+                "message0": "Set block at x: %1 y: %2 z: %3 unchangeable for player %4",
+                "args0": [
+                    { "type": "input_value", "name": "X" },
+                    { "type": "input_value", "name": "Y" },
+                    { "type": "input_value", "name": "Z" },
+                    { "type": "input_value", "name": "PLAYER" }
+                ],
+                "previousStatement": null,
+                "nextStatement": null,
+                "colour": "#a0086e"
+            },
+            {
+                "type": "set_cant_change_block_type",
+                "message0": "Set block type %1 unchangeable for player %2",
+                "args0": [
+                    { "type": "input_value", "name": "BLOCK_NAME" },
+                    { "type": "input_value", "name": "PLAYER" }
+                ],
+                "previousStatement": null,
+                "nextStatement": null,
+                "colour": "#a0086e"
+            },
+            {
+                "type": "set_walk_through_type",
+                "message0": "Set walk through type %1 for player %2 disable: %3",
+                "args0": [
+                    { "type": "input_value", "name": "BLOCK_NAME" },
+                    { "type": "input_value", "name": "PLAYER" },
+                    { "type": "input_value", "name": "DISABLE" }
+                ],
+                "previousStatement": null,
+                "nextStatement": null,
+                "colour": "#a0086e"
+            },
+            {
+                "type": "set_walk_through_rect",
+                "message0": "Set walk through rectangle from %1 to %2 for player %3 type: %4",
+                "args0": [
+                    { "type": "input_value", "name": "POS1" },
+                    { "type": "input_value", "name": "POS2" },
+                    { "type": "input_value", "name": "PLAYER" },
+                    { "type": "input_value", "name": "UPDATE_TYPE" }
+                ],
+                "previousStatement": null,
+                "nextStatement": null,
+                "colour": "#a0086e"
+            },
+            {
+                "type": "block_name_to_id",
+                "message0": "Convert block name %1 to ID allow invalid: %2",
+                "args0": [
+                    { "type": "input_value", "name": "BLOCK_NAME" },
+                    { "type": "input_value", "name": "ALLOW_INVALID" }
+                ],
+                "output": "Number",
+                "colour": "#af0e78"
+            },
+            {
+                "type": "block_id_to_name",
+                "message0": "Convert block ID %1 to name",
+                "args0": [
+                    { "type": "input_value", "name": "BLOCK_ID" }
+                ],
+                "output": "String",
+                "colour": "#af0e78"
+            },
+            {
+                "type": "block_coord_to_chunk",
+                "message0": "Convert block coordinates %1 to chunk ID",
+                "args0": [
+                    { "type": "input_value", "name": "COORDS" }
+                ],
+                "output": "String",
+                "colour": "#910265"
+            },
+            {
+                "type": "is_block_in_loaded_chunk",
+                "message0": "Is block loaded at x: %1 y: %2 z: %3",
+                "args0": [
+                    { "type": "input_value", "name": "X" },
+                    { "type": "input_value", "name": "Y" },
+                    { "type": "input_value", "name": "Z" }
+                ],
+                "output": "Boolean",
+                "colour": "#910265"
+            },
+            {
+                "type": "is_inside_rect",
+                "message0": "Is coordinates %1 inside rectangle from %2 to %3 add one to max: %4",
+                "args0": [
+                    { "type": "input_value", "name": "CHECK_COORDS" },
+                    { "type": "input_value", "name": "POS1" },
+                    { "type": "input_value", "name": "POS2" },
+                    { "type": "input_value", "name": "ADD_ONE" }
+                ],
+                "output": "Boolean",
+                "colour": "#910265"
+            },
+            {
+                "type": "chunk_id_to_bot_left_coord",
+                "message0": "Get bottom left coordinates of chunk %1",
+                "args0": [
+                    { "type": "input_value", "name": "CHUNK_ID" }
+                ],
+                "output": "Array",
+                "colour": "#910265"
+            },
+            {
+                "type": "reset_can_change_block_type",
+                "message0": "Reset can change block type %1 for player %2",
+                "args0": [
+                    { "type": "input_value", "name": "BLOCK_NAME" },
+                    { "type": "input_value", "name": "PLAYER" }
+                ],
+                "previousStatement": null,
+                "nextStatement": null,
+                "colour": "#a0086e"
+            },
+            {
+                "type": "raycast_for_block",
+                "message0": "Raycast from position %1 in direction %2",
+                "args0": [
+                    { "type": "input_value", "name": "FROM_POS" },
+                    { "type": "input_value", "name": "DIR_VEC" }
+                ],
+                "output": "Object",
+                "colour": "#910265"
             },
             {
                 "type": "apply_health_change",
@@ -440,7 +651,7 @@
                 ],
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": "#B68AFF"
+                "colour": "#d975b7"
             },
             {
                 "type": "set_shield_amount",
@@ -451,7 +662,7 @@
                 ],
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": "#B68AFF"
+                "colour": "#d975b7"
             },
             {
                 "type": "get_shield_amount",
@@ -460,7 +671,7 @@
                     { "type": "input_value", "name": "ENTITY" }
                 ],
                 "output": "Number",
-                "colour": "#B68AFF"
+                "colour": "#d975b7"
             },
             {
                 "type": "show_shop_tutorial",
@@ -470,7 +681,175 @@
                 ],
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": "#8E64FF"
+                "colour": "#c13a93"
+            },
+            {
+                "type": "set_camera_direction",
+                "message0": "Set camera direction for player %1 direction %2",
+                "args0": [
+                    { "type": "input_value", "name": "PLAYER" },
+                    { "type": "input_value", "name": "DIRECTION" }
+                ],
+                "previousStatement": null,
+                "nextStatement": null,
+                "colour": "#bb2c8a"
+            },
+            {
+                "type": "set_camera_zoom",
+                "message0": "Set camera zoom for player %1 zoom %2",
+                "args0": [
+                    { "type": "input_value", "name": "PLAYER" },
+                    { "type": "input_value", "name": "ZOOM" }
+                ],
+                "previousStatement": null,
+                "nextStatement": null,
+                "colour": "#bb2c8a"
+            },
+            {
+                "type": "set_player_opacity",
+                "message0": "Set opacity for player %1 opacity %2",
+                "args0": [
+                    { "type": "input_value", "name": "PLAYER" },
+                    { "type": "input_value", "name": "OPACITY" }
+                ],
+                "previousStatement": null,
+                "nextStatement": null,
+                "colour": "#b51d81"
+            },
+            {
+                "type": "set_player_opacity_for_one",
+                "message0": "Set player %1 opacity to %2 for viewer %3",
+                "args0": [
+                    { "type": "input_value", "name": "TARGET_PLAYER" },
+                    { "type": "input_value", "name": "OPACITY" },
+                    { "type": "input_value", "name": "VIEWER_PLAYER" }
+                ],
+                "previousStatement": null,
+                "nextStatement": null,
+                "colour": "#b51d81"
+            },
+            {
+                "type": "set_player_pose",
+                "message0": "Set pose for player %1 pose %2",
+                "args0": [
+                    { "type": "input_value", "name": "PLAYER" },
+                    { "type": "input_value", "name": "POSE" }
+                ],
+                "previousStatement": null,
+                "nextStatement": null,
+                "colour": "#b51d81"
+            },
+            {
+                "type": "scale_player_mesh_nodes",
+                "message0": "Scale mesh nodes for player %1 scales %2",
+                "args0": [
+                    { "type": "input_value", "name": "PLAYER" },
+                    { "type": "input_value", "name": "SCALES" }
+                ],
+                "previousStatement": null,
+                "nextStatement": null,
+                "colour": "#b51d81"
+            },
+            {
+                "type": "update_entity_node_mesh",
+                "message0": "Update entity %1 node mesh Type: %2 Node: %3 Offset: %4 Rotation: %5",
+                "args0": [
+                    { "type": "input_value", "name": "ENTITY" },
+                    { "type": "input_value", "name": "TYPE" },
+                    { "type": "input_value", "name": "NODE" },
+                    { "type": "input_value", "name": "OFFSET" },
+                    { "type": "input_value", "name": "ROTATION" }
+                ],
+                "previousStatement": null,
+                "nextStatement": null,
+                "colour": "#b51d81"
+            },
+            {
+                "type": "get_selected_inventory_slot",
+                "message0": "Get selected inventory slot of player %1",
+                "args0": [
+                    { "type": "input_value", "name": "PLAYER" }
+                ],
+                "output": "Number",
+                "colour": "#82015c"
+            },
+            {
+                "type": "get_held_item",
+                "message0": "Get held item of player %1",
+                "args0": [
+                    { "type": "input_value", "name": "PLAYER" }
+                ],
+                "output": "String",
+                "colour": "#82015c"
+            },
+            {
+                "type": "get_inventory_free_slots",
+                "message0": "Get free inventory slots of player %1",
+                "args0": [
+                    { "type": "input_value", "name": "PLAYER" }
+                ],
+                "output": "Number",
+                "colour": "#82015c"
+            },
+            {
+                "type": "get_chest_free_slots",
+                "message0": "Get free slots in chest at position %1",
+                "args0": [
+                    { "type": "input_value", "name": "POSITION" }
+                ],
+                "output": "Number",
+                "colour": "#82015c"
+            },
+            {
+                "type": "get_chest_item_amount",
+                "message0": "Get amount of item %1 in chest at position %2",
+                "args0": [
+                    { "type": "input_value", "name": "ITEM_NAME" },
+                    { "type": "input_value", "name": "POSITION" }
+                ],
+                "output": "Number",
+                "colour": "#82015c"
+            },
+            {
+                "type": "has_item",
+                "message0": "Player %1 has item %2",
+                "args0": [
+                    { "type": "input_value", "name": "PLAYER" },
+                    { "type": "input_value", "name": "ITEM_NAME" }
+                ],
+                "output": "Boolean",
+                "colour": "#82015c"
+            },
+            {
+                "type": "remove_item",
+                "message0": "Remove %1 of item %2 from player %3",
+                "args0": [
+                    { "type": "input_value", "name": "AMOUNT" },
+                    { "type": "input_value", "name": "ITEM_NAME" },
+                    { "type": "input_value", "name": "PLAYER" }
+                ],
+                "previousStatement": null,
+                "nextStatement": null,
+                "colour": "#82015c"
+            },
+            {
+                "type": "clear_inventory",
+                "message0": "Clear inventory of player %1",
+                "args0": [
+                    { "type": "input_value", "name": "PLAYER" }
+                ],
+                "previousStatement": null,
+                "nextStatement": null,
+                "colour": "#82015c"
+            },
+            {
+                "type": "inventory_is_full",
+                "message0": "Inventory is full for player %1",
+                "args0": [
+                    { "type": "input_value", "name": "PLAYER" }
+                ],
+                "output": "Boolean",
+                "colour": "#82015c"
             }
         ]);
 
@@ -496,29 +875,34 @@
                     'colourTertiary': '#e698b7'
                 },
                 'player_health_blocks': {
-                    'colourPrimary': '#B68AFF',
-                    'colourSecondary': '#9B6DFF',
-                    'colourTertiary': '#8E64FF'
+                    'colourPrimary': '#d975b7',
+                    'colourSecondary': '#d367ae',
+                    'colourTertiary': '#cd58a5'
                 },
                 'combat_blocks': {
-                    'colourPrimary': '#df84c0',
-                    'colourSecondary': '#f1b1b0',
-                    'colourTertiary': '#e698b7'
+                    'colourPrimary': '#d367ae',
+                    'colourSecondary': '#cd58a5',
+                    'colourTertiary': '#c7499c'
                 },
                 'player_info_blocks': {
-                    'colourPrimary': '#f1b1b0',
-                    'colourSecondary': '#df84c0',
-                    'colourTertiary': '#e698b7'
+                    'colourPrimary': '#cd58a5',
+                    'colourSecondary': '#c7499c',
+                    'colourTertiary': '#c13a93'
                 },
                 'block_operations': {
-                    'colourPrimary': '#df84c0',
-                    'colourSecondary': '#f1b1b0',
-                    'colourTertiary': '#e698b7'
+                    'colourPrimary': '#c7499c',
+                    'colourSecondary': '#c13a93',
+                    'colourTertiary': '#bb2c8a'
                 },
                 'game_ui': {
-                    'colourPrimary': '#f1b1b0',
-                    'colourSecondary': '#df84c0',
-                    'colourTertiary': '#e698b7'
+                    'colourPrimary': '#c13a93',
+                    'colourSecondary': '#bb2c8a',
+                    'colourTertiary': '#b51d81'
+                },
+                'inventory_blocks': {
+                    'colourPrimary': '#82015c',
+                    'colourSecondary': '#7a0e6f',
+                    'colourTertiary': '#6f0e6a'
                 }
             }
         });
@@ -606,6 +990,160 @@
                         let playerShopTutorial = getInputValue(block, "PLAYER", '0');
                         blockCode += `api.showShopTutorial(${playerShopTutorial});\n`;
                         break;
+                    case "set_camera_direction":
+                        let player = getInputValue(block, "PLAYER", '0');
+                        let direction = getInputValue(block, "DIRECTION", '[0, 0, 0]');
+                        blockCode += `api.setCameraDirection(${player}, ${direction});\n`;
+                        break;
+                    case "set_camera_zoom":
+                        let playerZoom = getInputValue(block, "PLAYER", '0');
+                        let zoom = getInputValue(block, "ZOOM", '1');
+                        blockCode += `api.setCameraZoom(${playerZoom}, ${zoom});\n`;
+                        break;
+                    case "set_player_opacity":
+                        let playerOpacity = getInputValue(block, "PLAYER", '0');
+                        let opacity = getInputValue(block, "OPACITY", '1');
+                        blockCode += `api.setPlayerOpacity(${playerOpacity}, ${opacity});\n`;
+                        break;
+                    case "set_player_opacity_for_one":
+                        let targetPlayer = getInputValue(block, "TARGET_PLAYER", '0');
+                        let opacityForOne = getInputValue(block, "OPACITY", '1');
+                        let viewerPlayer = getInputValue(block, "VIEWER_PLAYER", '0');
+                        blockCode += `api.setPlayerOpacityForOne(${targetPlayer}, ${opacityForOne}, ${viewerPlayer});\n`;
+                        break;
+                    case "set_player_pose":
+                        let playerPose = getInputValue(block, "PLAYER", '0');
+                        let pose = getInputValue(block, "POSE", '0');
+                        blockCode += `api.setPlayerPose(${playerPose}, ${pose});\n`;
+                        break;
+                    case "scale_player_mesh_nodes":
+                        let playerScale = getInputValue(block, "PLAYER", '0');
+                        let scales = getInputValue(block, "SCALES", '[1, 1, 1]');
+                        blockCode += `api.scalePlayerMeshNodes(${playerScale}, ${scales});\n`;
+                        break;
+                    case "update_entity_node_mesh":
+                        let entityUpdate = getInputValue(block, "ENTITY", '0');
+                        let typeUpdate = getInputValue(block, "TYPE", '0');
+                        let nodeUpdate = getInputValue(block, "NODE", '0');
+                        let offsetUpdate = getInputValue(block, "OFFSET", '[0, 0, 0]');
+                        let rotationUpdate = getInputValue(block, "ROTATION", '[0, 0, 0]');
+                        blockCode += `api.updateEntityNodeMesh(${entityUpdate}, ${typeUpdate}, ${nodeUpdate}, ${offsetUpdate}, ${rotationUpdate});\n`;
+                        break;
+                    case "get_block_id":
+                        let x = getInputValue(block, "X", '0');
+                        let y = getInputValue(block, "Y", '0');
+                        let z = getInputValue(block, "Z", '0');
+                        blockCode += `api.getBlockId(${x}, ${y}, ${z});\n`;
+                        break;
+                    case "get_meta_info":
+                        let blockName = getInputValue(block, "BLOCK_NAME", '0');
+                        blockCode += `api.getMetaInfo(${blockName});\n`;
+                        break;
+                    case "set_cant_change_block":
+                        let x1 = getInputValue(block, "X", '0');
+                        let y1 = getInputValue(block, "Y", '0');
+                        let z1 = getInputValue(block, "Z", '0');
+                        let player1 = getInputValue(block, "PLAYER", '0');
+                        blockCode += `api.setCantChangeBlock(${x1}, ${y1}, ${z1}, ${player1});\n`;
+                        break;
+                    case "set_cant_change_block_type":
+                        let blockName1 = getInputValue(block, "BLOCK_NAME", '0');
+                        let player2 = getInputValue(block, "PLAYER", '0');
+                        blockCode += `api.setCantChangeBlockType(${blockName1}, ${player2});\n`;
+                        break;
+                    case "set_walk_through_type":
+                        let blockName2 = getInputValue(block, "BLOCK_NAME", '0');
+                        let player3 = getInputValue(block, "PLAYER", '0');
+                        let disable = getInputValue(block, "DISABLE", 'false');
+                        blockCode += `api.setWalkThroughType(${blockName2}, ${player3}, ${disable});\n`;
+                        break;
+                    case "set_walk_through_rect":
+                        let pos1 = getInputValue(block, "POS1", '[0, 0, 0]');
+                        let pos2 = getInputValue(block, "POS2", '[0, 0, 0]');
+                        let player4 = getInputValue(block, "PLAYER", '0');
+                        let updateType = getInputValue(block, "UPDATE_TYPE", '0');
+                        blockCode += `api.setWalkThroughRect(${pos1}, ${pos2}, ${player4}, ${updateType});\n`;
+                        break;
+                    case "block_name_to_id":
+                        let blockName3 = getInputValue(block, "BLOCK_NAME", '0');
+                        let allowInvalid = getInputValue(block, "ALLOW_INVALID", 'false');
+                        blockCode += `api.blockNameToId(${blockName3}, ${allowInvalid});\n`;
+                        break;
+                    case "block_id_to_name":
+                        let blockId = getInputValue(block, "BLOCK_ID", '0');
+                        blockCode += `api.blockIdToName(${blockId});\n`;
+                        break;
+                    case "block_coord_to_chunk":
+                        let coords = getInputValue(block, "COORDS", '[0, 0, 0]');
+                        blockCode += `api.blockCoordToChunk(${coords});\n`;
+                        break;
+                    case "is_block_in_loaded_chunk":
+                        let x2 = getInputValue(block, "X", '0');
+                        let y2 = getInputValue(block, "Y", '0');
+                        let z2 = getInputValue(block, "Z", '0');
+                        blockCode += `api.isBlockInLoadedChunk(${x2}, ${y2}, ${z2});\n`;
+                        break;
+                    case "is_inside_rect":
+                        let checkCoords = getInputValue(block, "CHECK_COORDS", '[0, 0, 0]');
+                        let pos3 = getInputValue(block, "POS1", '[0, 0, 0]');
+                        let pos4 = getInputValue(block, "POS2", '[0, 0, 0]');
+                        let addOne = getInputValue(block, "ADD_ONE", 'false');
+                        blockCode += `api.isInsideRect(${checkCoords}, ${pos3}, ${pos4}, ${addOne});\n`;
+                        break;
+                    case "chunk_id_to_bot_left_coord":
+                        let chunkId = getInputValue(block, "CHUNK_ID", '0');
+                        blockCode += `api.chunkIdToBotLeftCoord(${chunkId});\n`;
+                        break;
+                    case "reset_can_change_block_type":
+                        let blockName4 = getInputValue(block, "BLOCK_NAME", '0');
+                        let player5 = getInputValue(block, "PLAYER", '0');
+                        blockCode += `api.resetCanChangeBlockType(${blockName4}, ${player5});\n`;
+                        break;
+                    case "raycast_for_block":
+                        let fromPos = getInputValue(block, "FROM_POS", '[0, 0, 0]');
+                        let dirVec = getInputValue(block, "DIR_VEC", '[0, 0, 0]');
+                        blockCode += `api.raycastForBlock(${fromPos}, ${dirVec});\n`;
+                        break;
+                    case "get_selected_inventory_slot":
+                        let playerSlot = getInputValue(block, "PLAYER", '0');
+                        blockCode += `api.getSelectedInventorySlotI(${playerSlot});\n`;
+                        break;
+                    case "get_held_item":
+                        let playerHeld = getInputValue(block, "PLAYER", '0');
+                        blockCode += `api.getHeldItem(${playerHeld});\n`;
+                        break;
+                    case "get_inventory_free_slots":
+                        let playerFree = getInputValue(block, "PLAYER", '0');
+                        blockCode += `api.getInventoryFreeSlotCount(${playerFree});\n`;
+                        break;
+                    case "get_chest_free_slots":
+                        let chestPos = getInputValue(block, "POSITION", '[0,0,0]');
+                        blockCode += `api.getStandardChestFreeSlotCount(${chestPos});\n`;
+                        break;
+                    case "get_chest_item_amount":
+                        let itemName = getInputValue(block, "ITEM_NAME", '"item"');
+                        let chestPosAmount = getInputValue(block, "POSITION", '[0,0,0]');
+                        blockCode += `api.getStandardChestItemAmount(${chestPosAmount}, ${itemName});\n`;
+                        break;
+                    case "has_item":
+                        let playerHas = getInputValue(block, "PLAYER", '0');
+                        let itemNameHas = getInputValue(block, "ITEM_NAME", '"item"');
+                        blockCode += `api.hasItem(${playerHas}, ${itemNameHas});\n`;
+                        break;
+                    case "remove_item":
+                        let playerRemove = getInputValue(block, "PLAYER", '0');
+                        let itemNameRemove = getInputValue(block, "ITEM_NAME", '"item"');
+                        let amountRemove = getInputValue(block, "AMOUNT", '1');
+                        blockCode += `api.removeItemName(${playerRemove}, ${itemNameRemove}, ${amountRemove});\n`;
+                        break;
+                    case "clear_inventory":
+                        let playerClear = getInputValue(block, "PLAYER", '0');
+                        blockCode += `api.clearInventory(${playerClear});\n`;
+                        break;
+                    case "inventory_is_full":
+                        let playerFull = getInputValue(block, "PLAYER", '0');
+                        blockCode += `api.inventoryIsFull(${playerFull});\n`;
+                        break;
                     default:
                         console.error("Unknown block type:", block.type);
                 }
@@ -622,7 +1160,25 @@
                 code += processBlock(block);
             }
 
-            document.getElementById("scriptOutput").innerText = code || "No script generated yet.";
+            function formatInto96CharBlocks(script) {
+                if (script.length <= 96) return script;
+                
+                const lines = script.split('\n');
+                const formattedLines = lines.map(line => {
+                    if (line.length <= 96) return line;
+                    
+                    const chunks = [];
+                    for (let i = 0; i < line.length; i += 96) {
+                        chunks.push(line.slice(i, i + 96));
+                    }
+                    return chunks.join('\n');
+                });
+                
+                return formattedLines.join('\n');
+            }
+
+            const formattedCode = formatInto96CharBlocks(code);
+            document.getElementById("scriptOutput").innerText = formattedCode || "No script generated yet.";
         }
     </script>
 </body>
