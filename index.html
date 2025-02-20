@@ -315,6 +315,33 @@
             color: gold;
             font-size: 16px;
         }
+
+        /* Script board styles */
+        .script-board {
+            background-color: #2d2d2d;
+            border: 1px solid #444;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            padding: 10px;
+        }
+        .script-board h3 {
+            color: #df84c0;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+        .script-board pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            margin: 0;
+            color: #e0e0e0;
+        }
+        .board-limit-warning {
+            background-color: #ff6b6b;
+            color: white;
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+        }
     </style>
 </head>
 <body>
@@ -334,7 +361,7 @@
         
         <div class="output-section">
             <h3>Generated PTC Script</h3>
-            <pre id="scriptOutput"></pre>
+            <div id="scriptOutput"></div>
         </div>
     </div>
 
@@ -1159,24 +1186,54 @@
         // Initialize favorites category
         updateToolbox();
 
-        function wrapText(text, lineLength = 16) {
-            // If text is already shorter than or equal to line length, return it
-            if (text.length <= lineLength) return text;
+        function splitIntoBoards(text, maxCharsPerBoard = 80, maxCharsPerLine = 16, maxLinesPerBoard = 6) {
+            // Function to wrap a single line to maxCharsPerLine
+            function wrapLine(line) {
+                const wrappedLines = [];
+                for (let i = 0; i < line.length; i += maxCharsPerLine) {
+                    wrappedLines.push(line.slice(i, i + maxCharsPerLine));
+                }
+                return wrappedLines;
+            }
+
+            // Split the text into boards of maximum 80 characters and 6 lines
+            const boards = [];
+            let currentBoard = '';
+            let currentBoardLineCount = 0;
             
-            // Initialize result array and current line
-            let result = [];
+            // Split the text into lines and wrap each line
+            const lines = text.split('\n');
+            const wrappedLines = lines.flatMap(line => wrapLine(line));
             
-            // Break text into 16-character chunks
-            for (let i = 0; i < text.length; i += lineLength) {
-                result.push(text.slice(i, i + lineLength));
+            wrappedLines.forEach(line => {
+                // If adding this line would exceed the board line limit or character limit, start a new board
+                if (currentBoardLineCount >= maxLinesPerBoard || 
+                    (currentBoard && currentBoard.length + line.length + 1 > maxCharsPerBoard)) {
+                    // Trim and add current board if not empty
+                    if (currentBoard.trim()) {
+                        boards.push(currentBoard.trim());
+                    }
+                    currentBoard = line;
+                    currentBoardLineCount = 1;
+                } else {
+                    // Add line to current board with a newline if board is not empty
+                    currentBoard += (currentBoard ? '\n' : '') + line;
+                    currentBoardLineCount++;
+                }
+            });
+            
+            // Add the last board if not empty
+            if (currentBoard.trim()) {
+                boards.push(currentBoard.trim());
             }
             
-            // Join chunks with newline
-            return result.join('\n');
+            return boards;
         }
 
         function generateScript() {
             let code = "";
+            let boardCount = 0;
+            let hasExceededBoardLimit = false;
             
             function getInputValue(block, inputName, defaultValue) {
                 let connectedBlock = block.getInputTargetBlock(inputName);
@@ -1196,14 +1253,14 @@
                 switch(block.type) {
                     case "input_text":
                         const inputText = block.getFieldValue('TEXT');
-                        return wrapText(`"${inputText}"`);
+                        return `"${inputText}"`;
                     case "text_block":
                         const text = block.getFieldValue('TEXT');
-                        blockCode += `// ${wrapText(text)}\n`;
+                        blockCode += `// ${text}\n`;
                         break;
                     case "log_message":
                         let msg = getInputValue(block, "MESSAGE", '"Log"');
-                        blockCode += `api.log(${wrapText(msg)});\n`;
+                        blockCode += `api.log(${msg});\n`;
                         break;
                     case "set_health":
                         let entity = getInputValue(block, "ENTITY", '0');
@@ -1398,9 +1455,69 @@
                 code += processBlock(block);
             }
 
-            document.getElementById('scriptOutput').textContent = wrapText(code);
+            // Split code into boards
+            const boards = splitIntoBoards(code);
+
+            // Check board count and set warning if exceeded
+            boardCount = boards.length;
+            hasExceededBoardLimit = boardCount > 50;
+
+            // Prepare output
+            let outputHTML = '';
+            
+            // Add boards
+            boards.forEach((board, index) => {
+                outputHTML += `<div class="script-board" data-board-number="${index + 1}">
+                    <h3>Board ${index + 1}</h3>
+                    <pre>${board}</pre>
+                </div>`;
+            });
+
+            // Add warning if board limit exceeded
+            if (hasExceededBoardLimit) {
+                outputHTML = `
+                <div class="board-limit-warning">
+                    <strong>WARNING:</strong> Script exceeds recommended 50 action board limit. 
+                    Total boards generated: ${boardCount}
+                </div>` + outputHTML;
+            }
+
+            // Update output section
+            document.getElementById('scriptOutput').innerHTML = outputHTML;
+
             return code;
         }
+
+        // Add some CSS for board styling
+        const boardStyle = document.createElement('style');
+        boardStyle.textContent = `
+            .script-board {
+                background-color: #2d2d2d;
+                border: 1px solid #444;
+                border-radius: 4px;
+                margin-bottom: 10px;
+                padding: 10px;
+            }
+            .script-board h3 {
+                color: #df84c0;
+                margin-bottom: 5px;
+                font-size: 14px;
+            }
+            .script-board pre {
+                white-space: pre-wrap;
+                word-wrap: break-word;
+                margin: 0;
+                color: #e0e0e0;
+            }
+            .board-limit-warning {
+                background-color: #ff6b6b;
+                color: white;
+                padding: 10px;
+                margin-bottom: 15px;
+                border-radius: 4px;
+            }
+        `;
+        document.head.appendChild(boardStyle);
     </script>
 </body>
 </html>
