@@ -275,16 +275,26 @@
 
         /* Block tooltip styles */
         .blocklyTooltip {
-            background-color: var(--bg-dark) !important;
-            border: 1px solid var(--primary) !important;
-            color: white !important;
-            padding: 8px 12px !important;
-            border-radius: 6px !important;
-            box-shadow: var(--shadow-soft) !important;
+            background-color: rgba(32, 33, 36, 0.9) !important;
+            border-radius: 4px !important;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2) !important;
+            color: rgba(255, 255, 255, 0.9) !important;
             font-family: 'Segoe UI', Arial, sans-serif !important;
             font-size: 13px !important;
-            max-width: 300px !important;
-            line-height: 1.4 !important;
+            line-height: 1.5 !important;
+            max-width: 250px !important;
+            padding: 8px 12px !important;
+            text-align: left !important;
+            white-space: normal !important;
+            word-wrap: break-word !important;
+            z-index: 9999 !important;
+        }
+        .blocklyTooltipDiv {
+            opacity: 1 !important;
+            transition: opacity 0.2s ease-in-out !important;
+        }
+        .blocklyTooltipDiv:hover {
+            opacity: 0.9 !important;
         }
 
         /* Favorites category styles */
@@ -446,31 +456,131 @@
                 "type": "input_text",
                 "message0": "Input: %1",
                 "args0": [
-                    { "type": "field_input", "name": "TEXT", "text": "text" }
+                    {
+                        "type": "input_value",
+                        "name": "TEXT"
+                    }
                 ],
-                "output": "String",
-                "colour": "#df84c0"
+                "previousStatement": null,
+                "nextStatement": null,
+                "colour": "#df84c0",
+                "tooltip": "Capture and store text input from the user. Useful for getting dynamic text-based information during script generation."
             },
             {
                 "type": "text_block",
-                "message0": "Text %1",
+                "message0": "Text: %1",
                 "args0": [
-                    { "type": "field_input", "name": "TEXT", "text": "Enter text here" }
+                    {
+                        "type": "field_input",
+                        "name": "TEXT",
+                        "text": "Enter text here"
+                    }
                 ],
-                "previousStatement": null,
-                "nextStatement": null,
-                "colour": "#df84c0"
+                "output": "String",
+                "colour": "#df84c0",
+                "tooltip": "Create a static text block with a predefined or custom text value. Can be used to provide constant string inputs."
             },
             {
                 "type": "set_health",
-                "message0": "Set health of %1 to %2",
+                "message0": "Set Player Health to %1",
                 "args0": [
-                    { "type": "input_value", "name": "ENTITY" },
-                    { "type": "input_value", "name": "HEALTH" }
+                    {
+                        "type": "input_value",
+                        "name": "HEALTH"
+                    }
                 ],
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": "#d975b7"
+                "colour": "#d975b7",
+                "tooltip": "Directly set a player's health to a specific value. Useful for healing, damaging, or resetting player health in game scenarios."
+            },
+            {
+                "type": "apply_health_change",
+                "message0": "%1 Player Health by %2",
+                "args0": [
+                    {
+                        "type": "field_dropdown",
+                        "name": "OPERATION",
+                        "options": [
+                            ["Increase", "ADD"],
+                            ["Decrease", "SUBTRACT"]
+                        ]
+                    },
+                    {
+                        "type": "input_value",
+                        "name": "AMOUNT"
+                    }
+                ],
+                "previousStatement": null,
+                "nextStatement": null,
+                "colour": "#d975b7",
+                "tooltip": "Modify a player's health by adding or subtracting a specific amount. Provides a dynamic way to adjust health during gameplay."
+            },
+            {
+                "type": "set_shield_amount",
+                "message0": "Set Shield Amount to %1",
+                "args0": [
+                    {
+                        "type": "input_value",
+                        "name": "SHIELD"
+                    }
+                ],
+                "previousStatement": null,
+                "nextStatement": null,
+                "colour": "#d975b7",
+                "tooltip": "Directly set a player's shield amount to a specific value. Useful for managing defensive capabilities."
+            },
+            {
+                "type": "get_shield_amount",
+                "message0": "Get Player Shield Amount",
+                "output": "Number",
+                "colour": "#d975b7",
+                "tooltip": "Retrieve the current shield amount for a player. Can be used in conditional logic or calculations."
+            },
+            {
+                "type": "apply_melee_hit",
+                "message0": "Apply Melee Hit to Player %1 with Damage %2",
+                "args0": [
+                    {
+                        "type": "input_value",
+                        "name": "PLAYER"
+                    },
+                    {
+                        "type": "input_value",
+                        "name": "DAMAGE"
+                    }
+                ],
+                "previousStatement": null,
+                "nextStatement": null,
+                "colour": "#d367ae",
+                "tooltip": "Simulate a melee attack on a specific player, applying a defined amount of damage. Useful for combat mechanics."
+            },
+            {
+                "type": "get_position",
+                "message0": "Get Player Position",
+                "output": "Array",
+                "colour": "#cd58a5",
+                "tooltip": "Retrieve the current 3D coordinates (x, y, z) of a player. Helpful for spatial awareness and positioning-based logic."
+            },
+            {
+                "type": "get_player_ids",
+                "message0": "Get Player IDs",
+                "output": "Array",
+                "colour": "#cd58a5",
+                "tooltip": "Retrieve a list of all active player identifiers in the current game session. Useful for iterating or selecting players."
+            },
+            {
+                "type": "player_is_in_game",
+                "message0": "Player %1 is in Game",
+                "args0": [
+                    {
+                        "type": "input_value",
+                        "name": "PLAYER"
+                    }
+                ],
+                "output": "Boolean",
+                "colour": "#cd58a5",
+                "tooltip": "Check if a specific player is currently active in the game. Returns true if the player is present, false otherwise."
             },
             {
                 "type": "log_message",
@@ -480,51 +590,8 @@
                 ],
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": "#c13a93"
-            },
-            {
-                "type": "apply_melee_hit",
-                "message0": "Apply melee hit from %1 to %2",
-                "args0": [
-                    { "type": "input_value", "name": "HITTER" },
-                    { "type": "input_value", "name": "TARGET" }
-                ],
-                "previousStatement": null,
-                "nextStatement": null,
-                "colour": "#d367ae"
-            },
-            {
-                "type": "get_position",
-                "message0": "Get position of %1",
-                "args0": [
-                    { "type": "input_value", "name": "ENTITY" }
-                ],
-                "output": "Array",
-                "colour": "#cd58a5"
-            },
-            {
-                "type": "get_player_ids",
-                "message0": "Get all player IDs",
-                "output": "Array",
-                "colour": "#cd58a5"
-            },
-            {
-                "type": "player_is_in_game",
-                "message0": "Is player %1 in game",
-                "args0": [
-                    { "type": "input_value", "name": "PLAYER" }
-                ],
-                "output": "Boolean",
-                "colour": "#cd58a5"
-            },
-            {
-                "type": "player_is_logged_in",
-                "message0": "Is player %1 logged in",
-                "args0": [
-                    { "type": "input_value", "name": "PLAYER" }
-                ],
-                "output": "Boolean",
-                "colour": "#cd58a5"
+                "colour": "#c13a93",
+                "tooltip": "Record a message in the game's log system. Useful for debugging, tracking events, or creating game narratives."
             },
             {
                 "type": "get_block_coordinates",
@@ -533,7 +600,8 @@
                     { "type": "input_value", "name": "PLAYER" }
                 ],
                 "output": "Array",
-                "colour": "#c7499c"
+                "colour": "#c7499c",
+                "tooltip": "Retrieve the 3D coordinates of a block associated with a specific player. Helpful for spatial tracking and block-based interactions."
             },
             {
                 "type": "get_block_types",
@@ -542,7 +610,8 @@
                     { "type": "input_value", "name": "PLAYER" }
                 ],
                 "output": "Array",
-                "colour": "#c7499c"
+                "colour": "#c7499c",
+                "tooltip": "Obtain a list of block types associated with a specific player. Useful for inventory or environment analysis."
             },
             {
                 "type": "get_block_id",
@@ -553,7 +622,8 @@
                     { "type": "input_value", "name": "Z" }
                 ],
                 "output": "Number",
-                "colour": "#af0e78"
+                "colour": "#af0e78",
+                "tooltip": "Retrieve the unique identifier of a block at specific 3D coordinates. Essential for precise block identification."
             },
             {
                 "type": "get_entities_in_rect",
@@ -563,7 +633,8 @@
                     { "type": "input_value", "name": "MAX_COORDS" }
                 ],
                 "output": "Array",
-                "colour": "#910265"
+                "colour": "#910265",
+                "tooltip": "Retrieve all entities within a rectangular area defined by minimum and maximum coordinates. Useful for area-based entity detection."
             },
             {
                 "type": "get_meta_info",
@@ -571,8 +642,9 @@
                 "args0": [
                     { "type": "input_value", "name": "BLOCK_NAME" }
                 ],
-                "output": "Object",
-                "colour": "#af0e78"
+                "output": "String",
+                "colour": "#af0e78",
+                "tooltip": "Retrieve additional metadata information for a specific block. Provides extended details about block properties."
             },
             {
                 "type": "set_cant_change_block",
@@ -585,22 +657,24 @@
                 ],
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": "#a0086e"
+                "colour": "#a0086e",
+                "tooltip": "Prevent a specific player from modifying a block at given coordinates. Useful for creating protected or restricted areas."
             },
             {
                 "type": "set_cant_change_block_type",
-                "message0": "Set block type %1 unchangeable for player %2",
+                "message0": "Prevent player %2 from changing block type %1",
                 "args0": [
                     { "type": "input_value", "name": "BLOCK_NAME" },
                     { "type": "input_value", "name": "PLAYER" }
                 ],
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": "#a0086e"
+                "colour": "#a0086e",
+                "tooltip": "Restrict a player from changing a specific type of block. Helps maintain game balance or create gameplay constraints."
             },
             {
                 "type": "set_walk_through_type",
-                "message0": "Set walk through type %1 for player %2 disable: %3",
+                "message0": "Set walk-through for block type %1 player %2 disable: %3",
                 "args0": [
                     { "type": "input_value", "name": "BLOCK_NAME" },
                     { "type": "input_value", "name": "PLAYER" },
@@ -608,20 +682,21 @@
                 ],
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": "#a0086e"
+                "colour": "#a0086e",
+                "tooltip": "Control whether a player can walk through a specific type of block. Enables or disables block collision for individual players."
             },
             {
                 "type": "set_walk_through_rect",
-                "message0": "Set walk through rectangle from %1 to %2 for player %3 type: %4",
+                "message0": "Set walk-through rectangle from %1 to %2 for player %3",
                 "args0": [
                     { "type": "input_value", "name": "POS1" },
                     { "type": "input_value", "name": "POS2" },
-                    { "type": "input_value", "name": "PLAYER" },
-                    { "type": "input_value", "name": "UPDATE_TYPE" }
+                    { "type": "input_value", "name": "PLAYER" }
                 ],
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": "#a0086e"
+                "colour": "#a0086e",
+                "tooltip": "Define a rectangular area where a specific player can or cannot walk through. Provides advanced movement restriction capabilities."
             },
             {
                 "type": "block_name_to_id",
@@ -631,7 +706,8 @@
                     { "type": "input_value", "name": "ALLOW_INVALID" }
                 ],
                 "output": "Number",
-                "colour": "#af0e78"
+                "colour": "#af0e78",
+                "tooltip": "Convert a block name to its corresponding unique identifier. Useful for block identification and manipulation."
             },
             {
                 "type": "block_id_to_name",
@@ -640,7 +716,8 @@
                     { "type": "input_value", "name": "BLOCK_ID" }
                 ],
                 "output": "String",
-                "colour": "#af0e78"
+                "colour": "#af0e78",
+                "tooltip": "Retrieve the name of a block based on its unique identifier. Essential for block identification and analysis."
             },
             {
                 "type": "block_coord_to_chunk",
@@ -649,7 +726,8 @@
                     { "type": "input_value", "name": "COORDS" }
                 ],
                 "output": "String",
-                "colour": "#910265"
+                "colour": "#910265",
+                "tooltip": "Transform block coordinates into a chunk identifier. Useful for spatial organization and chunk-based operations."
             },
             {
                 "type": "is_block_in_loaded_chunk",
@@ -660,7 +738,8 @@
                     { "type": "input_value", "name": "Z" }
                 ],
                 "output": "Boolean",
-                "colour": "#910265"
+                "colour": "#910265",
+                "tooltip": "Check if a block at specific coordinates is currently loaded in the game world. Useful for determining block visibility and accessibility."
             },
             {
                 "type": "is_inside_rect",
@@ -672,7 +751,8 @@
                     { "type": "input_value", "name": "ADD_ONE" }
                 ],
                 "output": "Boolean",
-                "colour": "#910265"
+                "colour": "#910265",
+                "tooltip": "Determine if a set of coordinates falls within a rectangular area defined by minimum and maximum coordinates. Useful for spatial checks and collision detection."
             },
             {
                 "type": "chunk_id_to_bot_left_coord",
@@ -681,7 +761,8 @@
                     { "type": "input_value", "name": "CHUNK_ID" }
                 ],
                 "output": "Array",
-                "colour": "#910265"
+                "colour": "#910265",
+                "tooltip": "Retrieve the bottom-left coordinates of a chunk based on its identifier. Essential for chunk-based positioning and spatial calculations."
             },
             {
                 "type": "reset_can_change_block_type",
@@ -692,7 +773,8 @@
                 ],
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": "#a0086e"
+                "colour": "#a0086e",
+                "tooltip": "Revert a player's ability to change a specific block type. Useful for resetting gameplay constraints or permissions."
             },
             {
                 "type": "raycast_for_block",
@@ -702,7 +784,8 @@
                     { "type": "input_value", "name": "DIR_VEC" }
                 ],
                 "output": "Object",
-                "colour": "#910265"
+                "colour": "#910265",
+                "tooltip": "Perform a raycast from a given position in a specified direction. Returns information about the first block intersected by the ray. Useful for advanced spatial queries and collision detection."
             },
             {
                 "type": "apply_health_change",
@@ -713,7 +796,8 @@
                 ],
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": "#d975b7"
+                "colour": "#d975b7",
+                "tooltip": "Dynamically modify an entity's health by adding or subtracting a specified amount. Useful for implementing damage, healing, or health-based game mechanics."
             },
             {
                 "type": "set_shield_amount",
@@ -724,16 +808,18 @@
                 ],
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": "#d975b7"
+                "colour": "#d975b7",
+                "tooltip": "Directly set the shield amount of an entity to a specific value. Useful for managing defensive capabilities."
             },
             {
                 "type": "get_shield_amount",
-                "message0": "Get shield amount of %1",
+                "message0": "Get shield amount for %1",
                 "args0": [
                     { "type": "input_value", "name": "ENTITY" }
                 ],
                 "output": "Number",
-                "colour": "#d975b7"
+                "colour": "#d975b7",
+                "tooltip": "Retrieve the current shield amount for a specific entity. Essential for tracking defensive capabilities and implementing shield-based gameplay elements."
             },
             {
                 "type": "show_shop_tutorial",
@@ -743,7 +829,8 @@
                 ],
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": "#c13a93"
+                "colour": "#c13a93",
+                "tooltip": "Trigger the shop tutorial interface for a specific player. Useful for guiding players through in-game purchasing mechanics."
             },
             {
                 "type": "set_camera_direction",
@@ -754,7 +841,8 @@
                 ],
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": "#bb2c8a"
+                "colour": "#bb2c8a",
+                "tooltip": "Adjust the camera orientation for a specific player. Allows precise control over the player's view perspective."
             },
             {
                 "type": "set_camera_zoom",
@@ -765,7 +853,8 @@
                 ],
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": "#bb2c8a"
+                "colour": "#bb2c8a",
+                "tooltip": "Modify the camera zoom level for a specific player. Control the field of view and visual proximity."
             },
             {
                 "type": "set_player_opacity",
@@ -776,7 +865,8 @@
                 ],
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": "#b51d81"
+                "colour": "#b51d81",
+                "tooltip": "Change the overall visibility of a player. Useful for creating transparency, invisibility, or visual effects."
             },
             {
                 "type": "set_player_opacity_for_one",
@@ -788,7 +878,8 @@
                 ],
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": "#b51d81"
+                "colour": "#b51d81",
+                "tooltip": "Set a specific player's opacity as seen by another player. Enables personalized visibility settings."
             },
             {
                 "type": "set_player_pose",
@@ -799,7 +890,8 @@
                 ],
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": "#b51d81"
+                "colour": "#b51d81",
+                "tooltip": "Change the player's current pose or animation state. Useful for controlling player animations and interactions."
             },
             {
                 "type": "scale_player_mesh_nodes",
@@ -810,7 +902,8 @@
                 ],
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": "#b51d81"
+                "colour": "#b51d81",
+                "tooltip": "Adjust the scale of a player's mesh nodes. Allows dynamic resizing of player character components."
             },
             {
                 "type": "update_entity_node_mesh",
@@ -824,7 +917,8 @@
                 ],
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": "#b51d81"
+                "colour": "#b51d81",
+                "tooltip": "Modify an entity's node mesh with precise control over type, node, offset, and rotation. Advanced mesh manipulation."
             },
             {
                 "type": "get_selected_inventory_slot",
@@ -833,7 +927,8 @@
                     { "type": "input_value", "name": "PLAYER" }
                 ],
                 "output": "Number",
-                "colour": "#82015c"
+                "colour": "#82015c",
+                "tooltip": "Retrieve the currently selected inventory slot for a specific player. Useful for tracking active item selection."
             },
             {
                 "type": "get_held_item",
@@ -842,7 +937,8 @@
                     { "type": "input_value", "name": "PLAYER" }
                 ],
                 "output": "String",
-                "colour": "#82015c"
+                "colour": "#82015c",
+                "tooltip": "Identify the item currently being held by a player. Helps track player equipment and interactions."
             },
             {
                 "type": "get_inventory_free_slots",
@@ -851,7 +947,8 @@
                     { "type": "input_value", "name": "PLAYER" }
                 ],
                 "output": "Number",
-                "colour": "#82015c"
+                "colour": "#82015c",
+                "tooltip": "Count the number of available empty slots in a player's inventory. Useful for inventory management."
             },
             {
                 "type": "get_chest_free_slots",
@@ -860,7 +957,8 @@
                     { "type": "input_value", "name": "POSITION" }
                 ],
                 "output": "Number",
-                "colour": "#82015c"
+                "colour": "#82015c",
+                "tooltip": "Determine the number of empty slots in a chest at a specific location. Helps with storage and item management."
             },
             {
                 "type": "get_chest_item_amount",
@@ -870,7 +968,8 @@
                     { "type": "input_value", "name": "POSITION" }
                 ],
                 "output": "Number",
-                "colour": "#82015c"
+                "colour": "#82015c",
+                "tooltip": "Count the quantity of a specific item in a chest at a given location. Useful for inventory tracking."
             },
             {
                 "type": "has_item",
@@ -880,7 +979,8 @@
                     { "type": "input_value", "name": "ITEM_NAME" }
                 ],
                 "output": "Boolean",
-                "colour": "#82015c"
+                "colour": "#82015c",
+                "tooltip": "Check if a player possesses a specific item. Returns true if the item is in the player's inventory."
             },
             {
                 "type": "remove_item",
@@ -892,7 +992,8 @@
                 ],
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": "#82015c"
+                "colour": "#82015c",
+                "tooltip": "Remove a specified quantity of an item from a player's inventory. Useful for item consumption or trading."
             },
             {
                 "type": "clear_inventory",
@@ -902,7 +1003,8 @@
                 ],
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": "#82015c"
+                "colour": "#82015c",
+                "tooltip": "Completely empty a player's inventory, removing all items. Use with caution as this is an irreversible action."
             },
             {
                 "type": "inventory_is_full",
@@ -911,7 +1013,8 @@
                     { "type": "input_value", "name": "PLAYER" }
                 ],
                 "output": "Boolean",
-                "colour": "#82015c"
+                "colour": "#82015c",
+                "tooltip": "Check if a player's inventory has reached its maximum capacity. Returns true if no more items can be added."
             }
         ]);
 
