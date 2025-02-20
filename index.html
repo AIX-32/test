@@ -6,104 +6,264 @@
     <title>Bloxd.io Press to Code Generator</title>
     <script src="https://unpkg.com/blockly/blockly.min.js"></script>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #df84c0;
+            --secondary: #f1b1b0;
+            --bg-dark: #1a1a1a;
+            --bg-light: #252526;
+            --gradient-primary: linear-gradient(135deg, #df84c0, #f1b1b0);
+            --gradient-hover: linear-gradient(135deg, #f1b1b0, #df84c0);
+            --shadow-soft: 0 4px 20px rgba(223, 132, 192, 0.15);
+            --shadow-strong: 0 8px 30px rgba(223, 132, 192, 0.25);
+        }
+
         body {
-            font-family: Arial, sans-serif;
-            background-color: #18141e;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: var(--bg-dark);
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+            background-size: 20px 20px;
             color: white;
-            text-align: center;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
+
+        .header {
+            background: linear-gradient(to right, #252526, #1e1e1e);
+            padding: 1.2rem;
+            box-shadow: var(--shadow-soft);
+            position: relative;
+            z-index: 10;
+            border-bottom: 1px solid rgba(223, 132, 192, 0.1);
+        }
+
+        .header h2 {
+            font-size: 1.8rem;
+            font-weight: 800;
+            margin: 0;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            display: inline-block;
+            letter-spacing: -0.02em;
+            text-shadow: 0 2px 10px rgba(223, 132, 192, 0.2);
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
         #blocklyDiv {
-            height: 700px; 
-            width: 100%;   
+            height: 600px;
+            width: 100%;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: var(--shadow-soft);
+            background: var(--bg-light);
+            border: 1px solid rgba(223, 132, 192, 0.1);
+            transition: box-shadow 0.3s ease;
         }
-        /* Modern block styles */
-        .blocklyPath {
-            filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.2));
+
+        #blocklyDiv:hover {
+            box-shadow: var(--shadow-strong);
         }
+
+        .output-section {
+            background: var(--bg-light);
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow-soft);
+            border: 1px solid rgba(223, 132, 192, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .output-section:hover {
+            box-shadow: var(--shadow-strong);
+        }
+
+        .output-section h3 {
+            font-size: 1.2rem;
+            font-weight: 500;
+            margin-bottom: 1rem;
+            color: var(--primary);
+            opacity: 0.9;
+        }
+
+        pre {
+            background: var(--bg-dark);
+            padding: 1.2rem;
+            border-radius: 12px;
+            text-align: left;
+            overflow-x: auto;
+            border: 1px solid rgba(223, 132, 192, 0.1);
+            font-family: 'Consolas', monospace;
+            font-size: 0.9rem;
+            line-height: 1.4;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .controls {
+            display: flex;
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        button {
+            padding: 0.8rem 1.5rem;
+            background: var(--gradient-primary);
+            border: none;
+            color: white;
+            font-weight: 500;
+            cursor: pointer;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-soft);
+            position: relative;
+            overflow: hidden;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-strong);
+            background: var(--gradient-hover);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        /* Blockly Customization */
         .blocklyMainBackground {
-            fill: #1e1e1e !important;
+            fill: var(--bg-light) !important;
         }
+
         .blocklyToolboxDiv {
-            background-color: #252526 !important;
+            background-color: var(--bg-light) !important;
             color: #ffffff !important;
-            border-right: 1px solid #333333;
+            border-right: 1px solid rgba(223, 132, 192, 0.1);
+            padding: 0.5rem;
         }
+
+        .blocklyTreeRow {
+            height: auto !important;
+            padding: 8px !important;
+            margin: 4px 0 !important;
+            border-radius: 10px;
+            transition: background-color 0.2s ease;
+        }
+
+        .blocklyTreeRow:hover {
+            background-color: rgba(223, 132, 192, 0.1) !important;
+        }
+
         .blocklyTreeLabel {
-            color: #ffffff !important;
+            color: rgba(255, 255, 255, 0.9) !important;
             font-family: 'Segoe UI', Arial, sans-serif;
             font-size: 13px;
+            padding: 0 8px !important;
+            display: inline-block !important;
+            vertical-align: middle !important;
         }
-        .blocklyTreeRow {
-            padding: 8px !important;
-            margin: 2px 0 !important;
-            border-radius: 6px;
+
+        .blocklyTreeIcon {
+            display: none !important;
         }
-        .blocklyTreeRow:hover {
-            background-color: #2d2d2d !important;
-        }
+
         .blocklyFlyoutBackground {
-            fill: #252526 !important;
+            fill: var(--bg-light) !important;
+            stroke: rgba(223, 132, 192, 0.1);
         }
-        /* Modern input field styles */
+
         .blocklyEditableText > text {
             fill: white !important;
         }
+
         .blocklyEditableText > rect {
-            fill: rgba(255, 255, 255, 0.1) !important;
-            rx: 4px;
+            fill: rgba(223, 132, 192, 0.1) !important;
+            rx: 6px;
         }
+
         .blocklyEditableText:hover > rect {
-            fill: rgba(255, 255, 255, 0.2) !important;
-            stroke: rgba(255, 255, 255, 0.4) !important;
+            fill: rgba(223, 132, 192, 0.2) !important;
+            stroke: rgba(223, 132, 192, 0.3) !important;
         }
-        /* Connection point styles */
-        .blocklyConnection {
-            fill: rgba(255, 255, 255, 0.5) !important;
-        }
-        /* Block shadow and shape */
+
         .blocklySelected > .blocklyPath {
-            filter: drop-shadow(0px 4px 8px rgba(0,0,0,0.3));
+            stroke: var(--primary) !important;
+            stroke-width: 2px !important;
         }
+
+        .blocklyResizeSE {
+            fill: var(--primary) !important;
+        }
+
+        .blocklyPath {
+            filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.2));
+            transition: filter 0.2s ease;
+        }
+
+        .blocklySelected > .blocklyPath {
+            filter: drop-shadow(0px 4px 8px rgba(223, 132, 192, 0.3));
+        }
+
         .blocklyDragging > .blocklyPath {
-            filter: drop-shadow(0px 6px 12px rgba(0,0,0,0.4));
+            filter: drop-shadow(0px 6px 12px rgba(223, 132, 192, 0.4));
         }
-        .container {
-            max-width: 1200px;
-            margin: auto;
+
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
         }
-        button {
-            padding: 10px 15px;
-            margin: 10px;
-            background: #B68AFF;
-            border: none;
-            color: white;
-            font-weight: bold;
-            cursor: pointer;
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-dark);
             border-radius: 5px;
         }
-        button:hover {
-            background: #A17AE1;
-        }
-        pre {
-            background: #292135;
-            padding: 10px;
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(var(--primary), var(--secondary));
             border-radius: 5px;
-            text-align: left;
         }
-        /* Style for category bottom placement */
-        .blocklyToolboxContents {
-            display: flex;
-            flex-direction: column-reverse !important;
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(var(--secondary), var(--primary));
         }
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="header">
         <h2>PTC GEN.</h2>
+    </div>
+    
+    <div class="main-content">
         <div id="blocklyDiv"></div>
-        <button onclick="generateScript()">Generate Script</button>
-        <h3>Generated PTC Script</h3>
-        <pre id="scriptOutput"></pre>
+        
+        <div class="controls">
+            <button onclick="generateScript()">Generate Script</button>
+        </div>
+        
+        <div class="output-section">
+            <h3>Generated PTC Script</h3>
+            <pre id="scriptOutput"></pre>
+        </div>
     </div>
 
     <xml id="toolbox" style="display: none">
@@ -112,30 +272,30 @@
             <block type="text_block"></block>
         </category>
 
-        <category name="Player Health" colour="#FF6B6B">
+        <category name="Player Health" colour="#B68AFF">
             <block type="set_health"></block>
             <block type="apply_health_change"></block>
             <block type="set_shield_amount"></block>
             <block type="get_shield_amount"></block>
         </category>
 
-        <category name="Combat" colour="#4ECDC4">
+        <category name="Combat" colour="#9B6DFF">
             <block type="apply_melee_hit"></block>
         </category>
 
-        <category name="Player Info" colour="#FFD93D">
+        <category name="Player Info" colour="#7C4DFF">
             <block type="get_position"></block>
             <block type="get_player_ids"></block>
             <block type="player_is_in_game"></block>
             <block type="player_is_logged_in"></block>
         </category>
 
-        <category name="Block Operations" colour="#95E1D3">
+        <category name="Block Operations" colour="#B388FF">
             <block type="get_block_coordinates"></block>
             <block type="get_block_types"></block>
         </category>
 
-        <category name="Game UI" colour="#A8E6CF">
+        <category name="Game UI" colour="#8E64FF">
             <block type="log_message"></block>
             <block type="show_shop_tutorial"></block>
         </category>
@@ -144,46 +304,26 @@
     <script>
         let workspace = Blockly.inject('blocklyDiv', {
             toolbox: document.getElementById('toolbox'),
-            horizontalLayout: false,
-            toolboxPosition: 'left',
+            zoom: {
+                controls: true,
+                wheel: true,
+                startScale: 1.0,
+                maxScale: 3,
+                minScale: 0.3,
+                scaleSpeed: 1.2,
+                pinch: true
+            },
             move: {
                 scrollbars: true,
                 drag: true,
                 wheel: true
             },
-            theme: {
-                'base': Blockly.Themes.Dark,
-                'componentStyles': {
-                    'workspaceBackgroundColour': '#1e1e1e',
-                    'toolboxBackgroundColour': '#252526',
-                    'toolboxForegroundColour': '#fff',
-                    'flyoutBackgroundColour': '#252526',
-                    'flyoutForegroundColour': '#fff',
-                    'flyoutOpacity': 1,
-                    'scrollbarColour': '#797979',
-                    'insertionMarkerColour': '#fff',
-                    'insertionMarkerOpacity': 0.3,
-                    'scrollbarOpacity': 0.4,
-                    'cursorColour': '#fff'
-                },
-                'blockStyles': {
-                    'colour_blocks': {
-                        'colourPrimary': '#5BA58C',
-                        'colourSecondary': '#4A917A',
-                        'colourTertiary': '#3F7F69'
-                    }
-                },
-                'fontStyle': {
-                    'family': 'Segoe UI, Arial, sans-serif',
-                    'weight': 'normal',
-                    'size': 13
-                }
-            },
-            renderer: 'zelos', // Using the modern Zelos renderer
+            theme: Blockly.Themes.Custom,
+            renderer: 'zelos',
             grid: {
                 spacing: 25,
                 length: 3,
-                colour: '#333',
+                colour: '#df84c0',
                 snap: true
             }
         });
@@ -217,7 +357,7 @@
                 ],
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": "#FF6B6B"
+                "colour": "#B68AFF"
             },
             {
                 "type": "log_message",
@@ -227,18 +367,18 @@
                 ],
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": "#A8E6CF"
+                "colour": "#8E64FF"
             },
             {
                 "type": "apply_melee_hit",
-                "message0": "Melee hit from %1 to %2",
+                "message0": "Apply melee hit from %1 to %2",
                 "args0": [
                     { "type": "input_value", "name": "HITTER" },
                     { "type": "input_value", "name": "TARGET" }
                 ],
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": "#4ECDC4"
+                "colour": "#9B6DFF"
             },
             {
                 "type": "get_position",
@@ -247,60 +387,60 @@
                     { "type": "input_value", "name": "ENTITY" }
                 ],
                 "output": "Array",
-                "colour": "#FFD93D"
+                "colour": "#7C4DFF"
             },
             {
                 "type": "get_player_ids",
-                "message0": "Get player IDs",
+                "message0": "Get all player IDs",
                 "output": "Array",
-                "colour": "#FFD93D"
+                "colour": "#7C4DFF"
             },
             {
                 "type": "player_is_in_game",
-                "message0": "Is player %1 in game?",
+                "message0": "Is player %1 in game",
                 "args0": [
                     { "type": "input_value", "name": "PLAYER" }
                 ],
                 "output": "Boolean",
-                "colour": "#FFD93D"
+                "colour": "#7C4DFF"
             },
             {
                 "type": "player_is_logged_in",
-                "message0": "Is player %1 logged in?",
+                "message0": "Is player %1 logged in",
                 "args0": [
                     { "type": "input_value", "name": "PLAYER" }
                 ],
                 "output": "Boolean",
-                "colour": "#FFD93D"
+                "colour": "#7C4DFF"
             },
             {
                 "type": "get_block_coordinates",
-                "message0": "Get block coordinates player %1 is standing on",
+                "message0": "Get block coordinates of %1",
                 "args0": [
                     { "type": "input_value", "name": "PLAYER" }
                 ],
                 "output": "Array",
-                "colour": "#95E1D3"
+                "colour": "#B388FF"
             },
             {
                 "type": "get_block_types",
-                "message0": "Get block types player %1 is standing on",
+                "message0": "Get block types of %1",
                 "args0": [
                     { "type": "input_value", "name": "PLAYER" }
                 ],
                 "output": "Array",
-                "colour": "#95E1D3"
+                "colour": "#B388FF"
             },
             {
                 "type": "apply_health_change",
                 "message0": "Apply health change of %1 to %2",
                 "args0": [
-                    { "type": "input_value", "name": "ENTITY" },
-                    { "type": "input_value", "name": "HEALTH_CHANGE" }
+                    { "type": "input_value", "name": "HEALTH_CHANGE" },
+                    { "type": "input_value", "name": "ENTITY" }
                 ],
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": "#FF6B6B"
+                "colour": "#B68AFF"
             },
             {
                 "type": "set_shield_amount",
@@ -311,7 +451,7 @@
                 ],
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": "#FF6B6B"
+                "colour": "#B68AFF"
             },
             {
                 "type": "get_shield_amount",
@@ -320,7 +460,7 @@
                     { "type": "input_value", "name": "ENTITY" }
                 ],
                 "output": "Number",
-                "colour": "#FF6B6B"
+                "colour": "#B68AFF"
             },
             {
                 "type": "show_shop_tutorial",
@@ -330,9 +470,60 @@
                 ],
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": "#A8E6CF"
+                "colour": "#8E64FF"
             }
         ]);
+
+        Blockly.Themes.Custom = Blockly.Theme.defineTheme('custom', {
+            'base': Blockly.Themes.Classic,
+            'componentStyles': {
+                'workspaceBackgroundColour': '#1e1e1e',
+                'toolboxBackgroundColour': '#252526',
+                'toolboxForegroundColour': '#fff',
+                'flyoutBackgroundColour': '#252526',
+                'flyoutForegroundColour': '#fff',
+                'flyoutOpacity': 0.9,
+                'scrollbarColour': '#df84c0',
+                'insertionMarkerColour': '#fff',
+                'insertionMarkerOpacity': 0.3,
+                'scrollbarOpacity': 0.4,
+                'cursorColour': '#fff'
+            },
+            'blockStyles': {
+                'input_blocks': {
+                    'colourPrimary': '#df84c0',
+                    'colourSecondary': '#f1b1b0',
+                    'colourTertiary': '#e698b7'
+                },
+                'player_health_blocks': {
+                    'colourPrimary': '#B68AFF',
+                    'colourSecondary': '#9B6DFF',
+                    'colourTertiary': '#8E64FF'
+                },
+                'combat_blocks': {
+                    'colourPrimary': '#df84c0',
+                    'colourSecondary': '#f1b1b0',
+                    'colourTertiary': '#e698b7'
+                },
+                'player_info_blocks': {
+                    'colourPrimary': '#f1b1b0',
+                    'colourSecondary': '#df84c0',
+                    'colourTertiary': '#e698b7'
+                },
+                'block_operations': {
+                    'colourPrimary': '#df84c0',
+                    'colourSecondary': '#f1b1b0',
+                    'colourTertiary': '#e698b7'
+                },
+                'game_ui': {
+                    'colourPrimary': '#f1b1b0',
+                    'colourSecondary': '#df84c0',
+                    'colourTertiary': '#e698b7'
+                }
+            }
+        });
+
+        workspace.setTheme(Blockly.Themes.Custom);
 
         function generateScript() {
             let code = "";
@@ -398,8 +589,8 @@
                         blockCode += `api.getBlockTypesPlayerStandingOn(${playerBlockTypes});\n`;
                         break;
                     case "apply_health_change":
-                        let entityHealthChange = getInputValue(block, "ENTITY", '0');
-                        let healthChange = getInputValue(block, "HEALTH_CHANGE", '0');
+                        let entityHealthChange = getInputValue(block, "HEALTH_CHANGE", '0');
+                        let healthChange = getInputValue(block, "ENTITY", '0');
                         blockCode += `api.applyHealthChange(${entityHealthChange}, ${healthChange});\n`;
                         break;
                     case "set_shield_amount":
