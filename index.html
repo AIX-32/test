@@ -246,6 +246,99 @@
         ::-webkit-scrollbar-thumb:hover {
             background: linear-gradient(var(--secondary), var(--primary));
         }
+
+        /* Search bar styles */
+        .search-container {
+            padding: 1rem;
+            background: var(--bg-light);
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            box-shadow: var(--shadow-soft);
+            border: 1px solid rgba(223, 132, 192, 0.1);
+            position: relative;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            min-height: 52px;
+            align-items: flex-start;
+        }
+
+        .search-input-wrapper {
+            flex: 1;
+            min-width: 200px;
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            border: 1px solid rgba(223, 132, 192, 0.2);
+            background: var(--bg-dark);
+            color: white;
+            font-size: 14px;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(223, 132, 192, 0.2);
+        }
+
+        /* Search suggestions styles */
+        .search-suggestions {
+            flex: 1 0 100%;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 8px;
+            margin-top: 8px;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+
+        .search-suggestions.active {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .suggestion-item {
+            background: var(--bg-dark);
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            border: 1px solid rgba(223, 132, 192, 0.1);
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .suggestion-item:hover {
+            border-color: var(--primary);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-soft);
+        }
+
+        .suggestion-item.selected {
+            background: rgba(223, 132, 192, 0.1);
+            border-color: var(--primary);
+        }
+
+        @keyframes blockSpawn {
+            0% {
+                transform: scale(0.8);
+                opacity: 0;
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .block-spawn {
+            animation: blockSpawn 0.3s ease-out;
+        }
     </style>
 </head>
 <body>
@@ -254,6 +347,13 @@
     </div>
     
     <div class="main-content">
+        <div class="search-container">
+            <div class="search-input-wrapper">
+                <input type="text" class="search-input" placeholder="Search blocks..." id="blockSearch">
+                <span class="clear-search" id="clearSearch">×</span>
+            </div>
+            <div class="search-suggestions" id="searchSuggestions"></div>
+        </div>
         <div id="blocklyDiv"></div>
         
         <div class="controls">
@@ -908,6 +1008,228 @@
         });
 
         workspace.setTheme(Blockly.Themes.Custom);
+
+        // Block descriptions
+        const blockDescriptions = {
+            'input_text': 'Creates a text input field that can be used to get user input',
+            'print': 'Outputs text to the game chat or console',
+            'get_selected_inventory_slot': 'Returns the currently selected inventory slot number',
+            'get_held_item': 'Returns the item currently held by the player',
+            'get_inventory_free_slots': 'Returns the number of empty slots in the player\'s inventory',
+            'get_chest_free_slots': 'Returns the number of empty slots in a chest',
+            'get_chest_item_amount': 'Returns the amount of a specific item in a chest',
+            'has_item': 'Checks if the player has a specific item in their inventory',
+            'remove_item': 'Removes a specific item from the player\'s inventory',
+            'clear_inventory': 'Removes all items from the player\'s inventory',
+            'inventory_is_full': 'Checks if the player\'s inventory is full'
+            // Add descriptions for other blocks here
+        };
+
+        // Favorites system
+        let favorites = JSON.parse(localStorage.getItem('blocklyFavorites') || '[]');
+
+        function toggleFavorite(blockType) {
+            const index = favorites.indexOf(blockType);
+            if (index === -1) {
+                favorites.push(blockType);
+            } else {
+                favorites.splice(index, 1);
+            }
+            localStorage.setItem('blocklyFavorites', JSON.stringify(favorites));
+            updateToolbox();
+        }
+
+        // Fuzzy search function
+        function fuzzyMatch(pattern, str) {
+            pattern = pattern.toLowerCase();
+            str = str.toLowerCase();
+            
+            let score = 0;
+            let patternIdx = 0;
+            let strIdx = 0;
+            let patternLength = pattern.length;
+            let strLength = str.length;
+            
+            while (patternIdx < patternLength && strIdx < strLength) {
+                if (pattern[patternIdx] === str[strIdx]) {
+                    score += 1;
+                    patternIdx++;
+                }
+                strIdx++;
+            }
+            
+            // Calculate match percentage
+            return (score / patternLength) * 100;
+        }
+
+        // Get all available blocks
+        function getAllBlocks() {
+            const blocks = [];
+            workspace.toolbox_.contents_.forEach(category => {
+                if (category.contents_) {
+                    category.contents_.forEach(block => {
+                        if (block.type_) {
+                            blocks.push({
+                                type: block.type_,
+                                category: category.name_,
+                                description: blockDescriptions[block.type_] || ''
+                            });
+                        }
+                    });
+                }
+            });
+            return blocks;
+        }
+
+        // Enhanced search functionality
+        const searchInput = document.getElementById('blockSearch');
+        const searchSuggestions = document.getElementById('searchSuggestions');
+        const clearSearch = document.getElementById('clearSearch');
+        const allBlocks = getAllBlocks();
+        let selectedSuggestionIndex = -1;
+
+        searchInput.addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            clearSearch.style.display = searchTerm ? 'block' : 'none';
+            
+            if (!searchTerm) {
+                searchSuggestions.classList.remove('active');
+                searchSuggestions.innerHTML = '';
+                return;
+            }
+
+            // Find matches using fuzzy search
+            const matches = allBlocks
+                .map(block => {
+                    const nameScore = fuzzyMatch(searchTerm, block.type);
+                    const descScore = block.description ? fuzzyMatch(searchTerm, block.description) : 0;
+                    return {
+                        ...block,
+                        score: Math.max(nameScore, descScore)
+                    };
+                })
+                .filter(block => block.score > 30)
+                .sort((a, b) => b.score - a.score);
+
+            // Update suggestions
+            searchSuggestions.innerHTML = '';
+            
+            if (matches.length) {
+                searchSuggestions.classList.add('active');
+                matches.forEach((match, index) => {
+                    const div = document.createElement('div');
+                    div.className = 'suggestion-item';
+                    
+                    let displayName = match.type;
+                    searchTerm.split('').forEach(char => {
+                        const regex = new RegExp(char, 'i');
+                        displayName = displayName.replace(regex, match => `<span class="suggestion-match">${match}</span>`);
+                    });
+
+                    div.innerHTML = `
+                        <span>${displayName}
+                            <span class="suggestion-category">${match.category}</span>
+                        </span>
+                        <span style="opacity: 0.5">${Math.round(match.score)}%</span>
+                    `;
+
+                    div.addEventListener('click', () => {
+                        spawnBlock(match.type);
+                        searchInput.value = '';
+                        searchSuggestions.classList.remove('active');
+                        searchSuggestions.innerHTML = '';
+                        clearSearch.style.display = 'none';
+                    });
+
+                    div.addEventListener('mouseenter', () => {
+                        selectedSuggestionIndex = index;
+                        updateSelectedSuggestion();
+                    });
+
+                    searchSuggestions.appendChild(div);
+                });
+            } else {
+                searchSuggestions.classList.remove('active');
+            }
+        });
+
+        // Keyboard navigation
+        searchInput.addEventListener('keydown', function(e) {
+            const suggestions = searchSuggestions.getElementsByClassName('suggestion-item');
+            
+            switch(e.key) {
+                case 'ArrowDown':
+                    e.preventDefault();
+                    selectedSuggestionIndex = Math.min(selectedSuggestionIndex + 1, suggestions.length - 1);
+                    updateSelectedSuggestion();
+                    break;
+                case 'ArrowUp':
+                    e.preventDefault();
+                    selectedSuggestionIndex = Math.max(selectedSuggestionIndex - 1, 0);
+                    updateSelectedSuggestion();
+                    break;
+                case 'Enter':
+                    e.preventDefault();
+                    if (selectedSuggestionIndex >= 0 && suggestions[selectedSuggestionIndex]) {
+                        suggestions[selectedSuggestionIndex].click();
+                    }
+                    break;
+                case 'Escape':
+                    searchInput.value = '';
+                    searchSuggestions.classList.remove('active');
+                    searchSuggestions.innerHTML = '';
+                    clearSearch.style.display = 'none';
+                    break;
+            }
+        });
+
+        function updateSelectedSuggestion() {
+            const suggestions = searchSuggestions.getElementsByClassName('suggestion-item');
+            Array.from(suggestions).forEach((suggestion, index) => {
+                suggestion.classList.toggle('selected', index === selectedSuggestionIndex);
+                if (index === selectedSuggestionIndex) {
+                    suggestion.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
+            });
+        }
+
+        // Spawn block in workspace
+        function spawnBlock(blockType) {
+            const block = workspace.newBlock(blockType);
+            block.initSvg();
+            block.render();
+            
+            // Position the block in the center of the visible workspace
+            const metrics = workspace.getMetrics();
+            const centerX = metrics.viewWidth / 2 + metrics.viewLeft;
+            const centerY = metrics.viewHeight / 2 + metrics.viewTop;
+            
+            block.moveBy(centerX, centerY);
+            
+            // Add spawn animation
+            block.getSvgRoot().classList.add('block-spawn');
+            
+            // Optional: Connect to nearby blocks if possible
+            block.tryToConnectToNearbyBlocks();
+        }
+
+        // Clear search
+        clearSearch.addEventListener('click', () => {
+            searchInput.value = '';
+            searchSuggestions.classList.remove('active');
+            searchSuggestions.innerHTML = '';
+            clearSearch.style.display = 'none';
+        });
+
+        // Close suggestions when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!searchSuggestions.contains(e.target) && 
+                !searchInput.contains(e.target) && 
+                e.target !== searchInput) {
+                searchSuggestions.classList.remove('active');
+                searchSuggestions.innerHTML = '';
+            }
+        });
 
         function generateScript() {
             let code = "";
