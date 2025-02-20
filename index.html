@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bloxd.io Press to Code Generator</title>
+    <title>PTC GEN.</title>
     <script src="https://unpkg.com/blockly/blockly.min.js"></script>
     <style>
         * {
@@ -255,18 +255,6 @@
             margin-bottom: 1rem;
             box-shadow: var(--shadow-soft);
             border: 1px solid rgba(223, 132, 192, 0.1);
-            position: relative;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            min-height: 52px;
-            align-items: flex-start;
-        }
-
-        .search-input-wrapper {
-            flex: 1;
-            min-width: 200px;
-            position: relative;
         }
 
         .search-input {
@@ -285,59 +273,37 @@
             box-shadow: 0 0 0 2px rgba(223, 132, 192, 0.2);
         }
 
-        /* Search suggestions styles */
-        .search-suggestions {
-            flex: 1 0 100%;
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 8px;
-            margin-top: 8px;
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.3s ease-out;
+        /* Block tooltip styles */
+        .blocklyTooltip {
+            background-color: var(--bg-dark) !important;
+            border: 1px solid var(--primary) !important;
+            color: white !important;
+            padding: 8px 12px !important;
+            border-radius: 6px !important;
+            box-shadow: var(--shadow-soft) !important;
+            font-family: 'Segoe UI', Arial, sans-serif !important;
+            font-size: 13px !important;
+            max-width: 300px !important;
+            line-height: 1.4 !important;
         }
 
-        .search-suggestions.active {
-            max-height: 300px;
-            overflow-y: auto;
+        /* Favorites category styles */
+        .favorite-block {
+            opacity: 0.8;
+            transition: opacity 0.2s;
         }
 
-        .suggestion-item {
-            background: var(--bg-dark);
-            padding: 8px 12px;
-            border-radius: 4px;
+        .favorite-block:hover {
+            opacity: 1;
+        }
+
+        .favorite-icon {
+            position: absolute;
+            right: 8px;
+            top: 8px;
             cursor: pointer;
-            border: 1px solid rgba(223, 132, 192, 0.1);
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .suggestion-item:hover {
-            border-color: var(--primary);
-            transform: translateY(-1px);
-            box-shadow: var(--shadow-soft);
-        }
-
-        .suggestion-item.selected {
-            background: rgba(223, 132, 192, 0.1);
-            border-color: var(--primary);
-        }
-
-        @keyframes blockSpawn {
-            0% {
-                transform: scale(0.8);
-                opacity: 0;
-            }
-            100% {
-                transform: scale(1);
-                opacity: 1;
-            }
-        }
-
-        .block-spawn {
-            animation: blockSpawn 0.3s ease-out;
+            color: gold;
+            font-size: 16px;
         }
     </style>
 </head>
@@ -348,11 +314,7 @@
     
     <div class="main-content">
         <div class="search-container">
-            <div class="search-input-wrapper">
-                <input type="text" class="search-input" placeholder="Search blocks..." id="blockSearch">
-                <span class="clear-search" id="clearSearch">×</span>
-            </div>
-            <div class="search-suggestions" id="searchSuggestions"></div>
+            <input type="text" class="search-input" placeholder="Search blocks..." id="blockSearch">
         </div>
         <div id="blocklyDiv"></div>
         
@@ -1039,197 +1001,60 @@
             updateToolbox();
         }
 
-        // Fuzzy search function
-        function fuzzyMatch(pattern, str) {
-            pattern = pattern.toLowerCase();
-            str = str.toLowerCase();
+        // Search functionality
+        document.getElementById('blockSearch').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const allBlocks = workspace.toolbox_.contents_;
             
-            let score = 0;
-            let patternIdx = 0;
-            let strIdx = 0;
-            let patternLength = pattern.length;
-            let strLength = str.length;
-            
-            while (patternIdx < patternLength && strIdx < strLength) {
-                if (pattern[patternIdx] === str[strIdx]) {
-                    score += 1;
-                    patternIdx++;
-                }
-                strIdx++;
-            }
-            
-            // Calculate match percentage
-            return (score / patternLength) * 100;
-        }
-
-        // Get all available blocks
-        function getAllBlocks() {
-            const blocks = [];
-            workspace.toolbox_.contents_.forEach(category => {
+            allBlocks.forEach(category => {
                 if (category.contents_) {
                     category.contents_.forEach(block => {
                         if (block.type_) {
-                            blocks.push({
-                                type: block.type_,
-                                category: category.name_,
-                                description: blockDescriptions[block.type_] || ''
-                            });
+                            const blockElement = block.element_;
+                            if (blockElement) {
+                                const visible = block.type_.toLowerCase().includes(searchTerm) ||
+                                    (blockDescriptions[block.type_] || '').toLowerCase().includes(searchTerm);
+                                blockElement.style.display = visible ? '' : 'none';
+                            }
                         }
                     });
                 }
             });
-            return blocks;
-        }
-
-        // Enhanced search functionality
-        const searchInput = document.getElementById('blockSearch');
-        const searchSuggestions = document.getElementById('searchSuggestions');
-        const clearSearch = document.getElementById('clearSearch');
-        const allBlocks = getAllBlocks();
-        let selectedSuggestionIndex = -1;
-
-        searchInput.addEventListener('input', function(e) {
-            const searchTerm = e.target.value.toLowerCase();
-            clearSearch.style.display = searchTerm ? 'block' : 'none';
-            
-            if (!searchTerm) {
-                searchSuggestions.classList.remove('active');
-                searchSuggestions.innerHTML = '';
-                return;
-            }
-
-            // Find matches using fuzzy search
-            const matches = allBlocks
-                .map(block => {
-                    const nameScore = fuzzyMatch(searchTerm, block.type);
-                    const descScore = block.description ? fuzzyMatch(searchTerm, block.description) : 0;
-                    return {
-                        ...block,
-                        score: Math.max(nameScore, descScore)
-                    };
-                })
-                .filter(block => block.score > 30)
-                .sort((a, b) => b.score - a.score);
-
-            // Update suggestions
-            searchSuggestions.innerHTML = '';
-            
-            if (matches.length) {
-                searchSuggestions.classList.add('active');
-                matches.forEach((match, index) => {
-                    const div = document.createElement('div');
-                    div.className = 'suggestion-item';
-                    
-                    let displayName = match.type;
-                    searchTerm.split('').forEach(char => {
-                        const regex = new RegExp(char, 'i');
-                        displayName = displayName.replace(regex, match => `<span class="suggestion-match">${match}</span>`);
-                    });
-
-                    div.innerHTML = `
-                        <span>${displayName}
-                            <span class="suggestion-category">${match.category}</span>
-                        </span>
-                        <span style="opacity: 0.5">${Math.round(match.score)}%</span>
-                    `;
-
-                    div.addEventListener('click', () => {
-                        spawnBlock(match.type);
-                        searchInput.value = '';
-                        searchSuggestions.classList.remove('active');
-                        searchSuggestions.innerHTML = '';
-                        clearSearch.style.display = 'none';
-                    });
-
-                    div.addEventListener('mouseenter', () => {
-                        selectedSuggestionIndex = index;
-                        updateSelectedSuggestion();
-                    });
-
-                    searchSuggestions.appendChild(div);
-                });
-            } else {
-                searchSuggestions.classList.remove('active');
-            }
         });
 
-        // Keyboard navigation
-        searchInput.addEventListener('keydown', function(e) {
-            const suggestions = searchSuggestions.getElementsByClassName('suggestion-item');
-            
-            switch(e.key) {
-                case 'ArrowDown':
-                    e.preventDefault();
-                    selectedSuggestionIndex = Math.min(selectedSuggestionIndex + 1, suggestions.length - 1);
-                    updateSelectedSuggestion();
-                    break;
-                case 'ArrowUp':
-                    e.preventDefault();
-                    selectedSuggestionIndex = Math.max(selectedSuggestionIndex - 1, 0);
-                    updateSelectedSuggestion();
-                    break;
-                case 'Enter':
-                    e.preventDefault();
-                    if (selectedSuggestionIndex >= 0 && suggestions[selectedSuggestionIndex]) {
-                        suggestions[selectedSuggestionIndex].click();
-                    }
-                    break;
-                case 'Escape':
-                    searchInput.value = '';
-                    searchSuggestions.classList.remove('active');
-                    searchSuggestions.innerHTML = '';
-                    clearSearch.style.display = 'none';
-                    break;
-            }
-        });
-
-        function updateSelectedSuggestion() {
-            const suggestions = searchSuggestions.getElementsByClassName('suggestion-item');
-            Array.from(suggestions).forEach((suggestion, index) => {
-                suggestion.classList.toggle('selected', index === selectedSuggestionIndex);
-                if (index === selectedSuggestionIndex) {
-                    suggestion.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        // Add tooltips to blocks
+        workspace.addChangeListener(function(event) {
+            if (event.type === Blockly.Events.BLOCK_CREATE) {
+                const block = workspace.getBlockById(event.blockId);
+                if (block && blockDescriptions[block.type]) {
+                    block.setTooltip(blockDescriptions[block.type]);
                 }
-            });
-        }
-
-        // Spawn block in workspace
-        function spawnBlock(blockType) {
-            const block = workspace.newBlock(blockType);
-            block.initSvg();
-            block.render();
-            
-            // Position the block in the center of the visible workspace
-            const metrics = workspace.getMetrics();
-            const centerX = metrics.viewWidth / 2 + metrics.viewLeft;
-            const centerY = metrics.viewHeight / 2 + metrics.viewTop;
-            
-            block.moveBy(centerX, centerY);
-            
-            // Add spawn animation
-            block.getSvgRoot().classList.add('block-spawn');
-            
-            // Optional: Connect to nearby blocks if possible
-            block.tryToConnectToNearbyBlocks();
-        }
-
-        // Clear search
-        clearSearch.addEventListener('click', () => {
-            searchInput.value = '';
-            searchSuggestions.classList.remove('active');
-            searchSuggestions.innerHTML = '';
-            clearSearch.style.display = 'none';
-        });
-
-        // Close suggestions when clicking outside
-        document.addEventListener('click', (e) => {
-            if (!searchSuggestions.contains(e.target) && 
-                !searchInput.contains(e.target) && 
-                e.target !== searchInput) {
-                searchSuggestions.classList.remove('active');
-                searchSuggestions.innerHTML = '';
             }
         });
+
+        // Update toolbox to include favorites
+        function updateToolbox() {
+            if (favorites.length > 0) {
+                const favoritesCategory = {
+                    "kind": "category",
+                    "name": "Favorites",
+                    "colour": "#FFD700",
+                    "contents": favorites.map(blockType => ({
+                        "kind": "block",
+                        "type": blockType
+                    }))
+                };
+                
+                // Add favorites category to toolbox
+                const toolboxConfig = workspace.toolbox_.getToolboxItems();
+                if (!toolboxConfig.find(cat => cat.name_ === "Favorites")) {
+                    workspace.toolbox_.addCategory(favoritesCategory);
+                }
+            }
+        }
+
+        // Initialize favorites category
+        updateToolbox();
 
         function generateScript() {
             let code = "";
