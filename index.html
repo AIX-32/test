@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PTC GEN.</title>
+    <title>Bloxd.io Press to Code Generator</title>
     <script src="https://unpkg.com/blockly/blockly.min.js"></script>
     <style>
         body {
@@ -12,10 +12,61 @@
             color: white;
             text-align: center;
         }
-#blocklyDiv {
-    height: 700px; 
-    width: 100%;   
-}
+        #blocklyDiv {
+            height: 700px; 
+            width: 100%;   
+        }
+        /* Modern block styles */
+        .blocklyPath {
+            filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.2));
+        }
+        .blocklyMainBackground {
+            fill: #1e1e1e !important;
+        }
+        .blocklyToolboxDiv {
+            background-color: #252526 !important;
+            color: #ffffff !important;
+            border-right: 1px solid #333333;
+        }
+        .blocklyTreeLabel {
+            color: #ffffff !important;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            font-size: 13px;
+        }
+        .blocklyTreeRow {
+            padding: 8px !important;
+            margin: 2px 0 !important;
+            border-radius: 6px;
+        }
+        .blocklyTreeRow:hover {
+            background-color: #2d2d2d !important;
+        }
+        .blocklyFlyoutBackground {
+            fill: #252526 !important;
+        }
+        /* Modern input field styles */
+        .blocklyEditableText > text {
+            fill: white !important;
+        }
+        .blocklyEditableText > rect {
+            fill: rgba(255, 255, 255, 0.1) !important;
+            rx: 4px;
+        }
+        .blocklyEditableText:hover > rect {
+            fill: rgba(255, 255, 255, 0.2) !important;
+            stroke: rgba(255, 255, 255, 0.4) !important;
+        }
+        /* Connection point styles */
+        .blocklyConnection {
+            fill: rgba(255, 255, 255, 0.5) !important;
+        }
+        /* Block shadow and shape */
+        .blocklySelected > .blocklyPath {
+            filter: drop-shadow(0px 4px 8px rgba(0,0,0,0.3));
+        }
+        .blocklyDragging > .blocklyPath {
+            filter: drop-shadow(0px 6px 12px rgba(0,0,0,0.4));
+        }
         .container {
             max-width: 1200px;
             margin: auto;
@@ -39,6 +90,11 @@
             border-radius: 5px;
             text-align: left;
         }
+        /* Style for category bottom placement */
+        .blocklyToolboxContents {
+            display: flex;
+            flex-direction: column-reverse !important;
+        }
     </style>
 </head>
 <body>
@@ -46,35 +102,112 @@
         <h2>PTC GEN.</h2>
         <div id="blocklyDiv"></div>
         <button onclick="generateScript()">Generate Script</button>
-        <h3>Generated PTC</h3>
+        <h3>Generated PTC Script</h3>
         <pre id="scriptOutput"></pre>
     </div>
 
     <xml id="toolbox" style="display: none">
-        <category name="Bloxd.io" colour="#B68AFF">
+        <category name="Input" colour="#B68AFF">
+            <block type="input_text"></block>
+            <block type="text_block"></block>
+        </category>
+
+        <category name="Player Health" colour="#FF6B6B">
             <block type="set_health"></block>
-            <block type="log_message"></block>
+            <block type="apply_health_change"></block>
+            <block type="set_shield_amount"></block>
+            <block type="get_shield_amount"></block>
+        </category>
+
+        <category name="Combat" colour="#4ECDC4">
             <block type="apply_melee_hit"></block>
+        </category>
+
+        <category name="Player Info" colour="#FFD93D">
             <block type="get_position"></block>
             <block type="get_player_ids"></block>
             <block type="player_is_in_game"></block>
             <block type="player_is_logged_in"></block>
+        </category>
+
+        <category name="Block Operations" colour="#95E1D3">
             <block type="get_block_coordinates"></block>
             <block type="get_block_types"></block>
-            <block type="apply_health_change"></block>
-            <block type="set_shield_amount"></block>
-            <block type="get_shield_amount"></block>
+        </category>
+
+        <category name="Game UI" colour="#A8E6CF">
+            <block type="log_message"></block>
             <block type="show_shop_tutorial"></block>
-            <block type="apply_melee_hit"></block>
         </category>
     </xml>
 
     <script>
         let workspace = Blockly.inject('blocklyDiv', {
-            toolbox: document.getElementById('toolbox')
+            toolbox: document.getElementById('toolbox'),
+            horizontalLayout: false,
+            toolboxPosition: 'left',
+            move: {
+                scrollbars: true,
+                drag: true,
+                wheel: true
+            },
+            theme: {
+                'base': Blockly.Themes.Dark,
+                'componentStyles': {
+                    'workspaceBackgroundColour': '#1e1e1e',
+                    'toolboxBackgroundColour': '#252526',
+                    'toolboxForegroundColour': '#fff',
+                    'flyoutBackgroundColour': '#252526',
+                    'flyoutForegroundColour': '#fff',
+                    'flyoutOpacity': 1,
+                    'scrollbarColour': '#797979',
+                    'insertionMarkerColour': '#fff',
+                    'insertionMarkerOpacity': 0.3,
+                    'scrollbarOpacity': 0.4,
+                    'cursorColour': '#fff'
+                },
+                'blockStyles': {
+                    'colour_blocks': {
+                        'colourPrimary': '#5BA58C',
+                        'colourSecondary': '#4A917A',
+                        'colourTertiary': '#3F7F69'
+                    }
+                },
+                'fontStyle': {
+                    'family': 'Segoe UI, Arial, sans-serif',
+                    'weight': 'normal',
+                    'size': 13
+                }
+            },
+            renderer: 'zelos', // Using the modern Zelos renderer
+            grid: {
+                spacing: 25,
+                length: 3,
+                colour: '#333',
+                snap: true
+            }
         });
 
         Blockly.defineBlocksWithJsonArray([
+            {
+                "type": "input_text",
+                "message0": "Input: %1",
+                "args0": [
+                    { "type": "field_input", "name": "TEXT", "text": "text" }
+                ],
+                "output": "String",
+                "colour": "#B68AFF"
+            },
+            {
+                "type": "text_block",
+                "message0": "Text %1",
+                "args0": [
+                    { "type": "field_input", "name": "TEXT", "text": "Enter text here" }
+                ],
+                "previousStatement": null,
+                "nextStatement": null,
+                "colour": "#B68AFF"
+            },
             {
                 "type": "set_health",
                 "message0": "Set health of %1 to %2",
@@ -84,7 +217,7 @@
                 ],
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": "#B68AFF"
+                "colour": "#FF6B6B"
             },
             {
                 "type": "log_message",
@@ -94,7 +227,7 @@
                 ],
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": "#B68AFF"
+                "colour": "#A8E6CF"
             },
             {
                 "type": "apply_melee_hit",
@@ -105,7 +238,7 @@
                 ],
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": "#B68AFF"
+                "colour": "#4ECDC4"
             },
             {
                 "type": "get_position",
@@ -114,13 +247,13 @@
                     { "type": "input_value", "name": "ENTITY" }
                 ],
                 "output": "Array",
-                "colour": "#B68AFF"
+                "colour": "#FFD93D"
             },
             {
                 "type": "get_player_ids",
                 "message0": "Get player IDs",
                 "output": "Array",
-                "colour": "#B68AFF"
+                "colour": "#FFD93D"
             },
             {
                 "type": "player_is_in_game",
@@ -129,7 +262,7 @@
                     { "type": "input_value", "name": "PLAYER" }
                 ],
                 "output": "Boolean",
-                "colour": "#B68AFF"
+                "colour": "#FFD93D"
             },
             {
                 "type": "player_is_logged_in",
@@ -138,7 +271,7 @@
                     { "type": "input_value", "name": "PLAYER" }
                 ],
                 "output": "Boolean",
-                "colour": "#B68AFF"
+                "colour": "#FFD93D"
             },
             {
                 "type": "get_block_coordinates",
@@ -147,7 +280,7 @@
                     { "type": "input_value", "name": "PLAYER" }
                 ],
                 "output": "Array",
-                "colour": "#B68AFF"
+                "colour": "#95E1D3"
             },
             {
                 "type": "get_block_types",
@@ -156,7 +289,7 @@
                     { "type": "input_value", "name": "PLAYER" }
                 ],
                 "output": "Array",
-                "colour": "#B68AFF"
+                "colour": "#95E1D3"
             },
             {
                 "type": "apply_health_change",
@@ -167,7 +300,7 @@
                 ],
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": "#B68AFF"
+                "colour": "#FF6B6B"
             },
             {
                 "type": "set_shield_amount",
@@ -178,7 +311,7 @@
                 ],
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": "#B68AFF"
+                "colour": "#FF6B6B"
             },
             {
                 "type": "get_shield_amount",
@@ -187,7 +320,7 @@
                     { "type": "input_value", "name": "ENTITY" }
                 ],
                 "output": "Number",
-                "colour": "#B68AFF"
+                "colour": "#FF6B6B"
             },
             {
                 "type": "show_shop_tutorial",
@@ -197,77 +330,109 @@
                 ],
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": "#B68AFF"
+                "colour": "#A8E6CF"
             }
-
         ]);
 
-function generateScript() {
-    let code = "";
+        function generateScript() {
+            let code = "";
+            
+            function getInputValue(block, inputName, defaultValue) {
+                let connectedBlock = block.getInputTargetBlock(inputName);
+                return connectedBlock ? processBlock(connectedBlock) : defaultValue;
+            }
 
-    function processBlock(block) {
-        if (!block) return ""; 
+            function processBlock(block) {
+                if (!block) return "";
+                
+                if (!block.type) {
+                    console.error("Block type is null:", block);
+                    return "";
+                }
 
-        let blockCode = "";
-        
-        if (block.type === "set_health") {
-            let entity = Blockly.JavaScript.valueToCode(block, "ENTITY", Blockly.JavaScript.ORDER_ATOMIC) || '0';
-            let health = Blockly.JavaScript.valueToCode(block, "HEALTH", Blockly.JavaScript.ORDER_ATOMIC) || '100';
-            blockCode += `api.setHealth(${entity}, ${health});\n`;
-        } else if (block.type === "log_message") {
-            let msg = Blockly.JavaScript.valueToCode(block, "MESSAGE", Blockly.JavaScript.ORDER_ATOMIC) || '"Log"';
-            blockCode += `api.log(${msg});\n`;
-        } else if (block.type === "apply_melee_hit") {
-            let hitter = Blockly.JavaScript.valueToCode(block, "HITTER", Blockly.JavaScript.ORDER_ATOMIC) || '0';
-            let target = Blockly.JavaScript.valueToCode(block, "TARGET", Blockly.JavaScript.ORDER_ATOMIC) || '0';
-            blockCode += `api.applyMeleeHit(${hitter}, ${target}, [0, 0, 0]);\n`;
-        } else if (block.type === "get_position") {
-            let entity = Blockly.JavaScript.valueToCode(block, "ENTITY", Blockly.JavaScript.ORDER_ATOMIC) || '0';
-            blockCode += `api.getPosition(${entity});\n`;
-        } else if (block.type === "get_player_ids") {
-            blockCode += `api.getPlayerIds();\n`;
-        } else if (block.type === "player_is_in_game") {
-            let player = Blockly.JavaScript.valueToCode(block, "PLAYER", Blockly.JavaScript.ORDER_ATOMIC) || '0';
-            blockCode += `api.playerIsInGame(${player});\n`;
-        } else if (block.type === "player_is_logged_in") {
-            let player = Blockly.JavaScript.valueToCode(block, "PLAYER", Blockly.JavaScript.ORDER_ATOMIC) || '0';
-            blockCode += `api.playerIsLoggedIn(${player});\n`;
-        } else if (block.type === "get_block_coordinates") {
-            let player = Blockly.JavaScript.valueToCode(block, "PLAYER", Blockly.JavaScript.ORDER_ATOMIC) || '0';
-            blockCode += `api.getBlockCoordinatesPlayerStandingOn(${player});\n`;
-        } else if (block.type === "get_block_types") {
-            let player = Blockly.JavaScript.valueToCode(block, "PLAYER", Blockly.JavaScript.ORDER_ATOMIC) || '0';
-            blockCode += `api.getBlockTypesPlayerStandingOn(${player});\n`;
-        } else if (block.type === "apply_health_change") {
-            let entity = Blockly.JavaScript.valueToCode(block, "ENTITY", Blockly.JavaScript.ORDER_ATOMIC) || '0';
-            let healthChange = Blockly.JavaScript.valueToCode(block, "HEALTH_CHANGE", Blockly.JavaScript.ORDER_ATOMIC) || '0';
-            blockCode += `api.applyHealthChange(${entity}, ${healthChange});\n`;
-        } else if (block.type === "set_shield_amount") {
-            let entity = Blockly.JavaScript.valueToCode(block, "ENTITY", Blockly.JavaScript.ORDER_ATOMIC) || '0';
-            let shield = Blockly.JavaScript.valueToCode(block, "SHIELD", Blockly.JavaScript.ORDER_ATOMIC) || '0';
-            blockCode += `api.setShieldAmount(${entity}, ${shield});\n`;
-        } else if (block.type === "get_shield_amount") {
-            let entity = Blockly.JavaScript.valueToCode(block, "ENTITY", Blockly.JavaScript.ORDER_ATOMIC) || '0';
-            blockCode += `api.getShieldAmount(${entity});\n`;
-        } else if (block.type === "show_shop_tutorial") {
-            let player = Blockly.JavaScript.valueToCode(block, "PLAYER", Blockly.JavaScript.ORDER_ATOMIC) || '0';
-            blockCode += `api.showShopTutorial(${player});\n`;
+                let blockCode = "";
+                
+                switch(block.type) {
+                    case "input_text":
+                        const inputText = block.getFieldValue('TEXT');
+                        return `"${inputText}"`;
+                    case "text_block":
+                        const text = block.getFieldValue('TEXT');
+                        blockCode += `// ${text}\n`;
+                        break;
+                    case "set_health":
+                        let entity = getInputValue(block, "ENTITY", '0');
+                        let health = getInputValue(block, "HEALTH", '100');
+                        blockCode += `api.setHealth(${entity}, ${health});\n`;
+                        break;
+                    case "log_message":
+                        let msg = getInputValue(block, "MESSAGE", '"Log"');
+                        blockCode += `api.log(${msg});\n`;
+                        break;
+                    case "apply_melee_hit":
+                        let hitter = getInputValue(block, "HITTER", '0');
+                        let target = getInputValue(block, "TARGET", '0');
+                        blockCode += `api.applyMeleeHit(${hitter}, ${target}, [0, 0, 0]);\n`;
+                        break;
+                    case "get_position":
+                        let entityPos = getInputValue(block, "ENTITY", '0');
+                        blockCode += `api.getPosition(${entityPos});\n`;
+                        break;
+                    case "get_player_ids":
+                        blockCode += `api.getPlayerIds();\n`;
+                        break;
+                    case "player_is_in_game":
+                        let playerInGame = getInputValue(block, "PLAYER", '0');
+                        blockCode += `api.playerIsInGame(${playerInGame});\n`;
+                        break;
+                    case "player_is_logged_in":
+                        let playerLoggedIn = getInputValue(block, "PLAYER", '0');
+                        blockCode += `api.playerIsLoggedIn(${playerLoggedIn});\n`;
+                        break;
+                    case "get_block_coordinates":
+                        let playerBlockCoords = getInputValue(block, "PLAYER", '0');
+                        blockCode += `api.getBlockCoordinatesPlayerStandingOn(${playerBlockCoords});\n`;
+                        break;
+                    case "get_block_types":
+                        let playerBlockTypes = getInputValue(block, "PLAYER", '0');
+                        blockCode += `api.getBlockTypesPlayerStandingOn(${playerBlockTypes});\n`;
+                        break;
+                    case "apply_health_change":
+                        let entityHealthChange = getInputValue(block, "ENTITY", '0');
+                        let healthChange = getInputValue(block, "HEALTH_CHANGE", '0');
+                        blockCode += `api.applyHealthChange(${entityHealthChange}, ${healthChange});\n`;
+                        break;
+                    case "set_shield_amount":
+                        let entityShield = getInputValue(block, "ENTITY", '0');
+                        let shield = getInputValue(block, "SHIELD", '0');
+                        blockCode += `api.setShieldAmount(${entityShield}, ${shield});\n`;
+                        break;
+                    case "get_shield_amount":
+                        let entityShieldAmount = getInputValue(block, "ENTITY", '0');
+                        blockCode += `api.getShieldAmount(${entityShieldAmount});\n`;
+                        break;
+                    case "show_shop_tutorial":
+                        let playerShopTutorial = getInputValue(block, "PLAYER", '0');
+                        blockCode += `api.showShopTutorial(${playerShopTutorial});\n`;
+                        break;
+                    default:
+                        console.error("Unknown block type:", block.type);
+                }
+
+                if (block.nextConnection && block.nextConnection.targetBlock()) {
+                    blockCode += processBlock(block.nextConnection.targetBlock());
+                }
+
+                return blockCode;
+            }
+
+            let blocks = workspace.getTopBlocks(true);
+            for (let block of blocks) {
+                code += processBlock(block);
+            }
+
+            document.getElementById("scriptOutput").innerText = code || "No script generated yet.";
         }
-
-       
-        let nextBlock = block.getNextBlock();
-        return blockCode + processBlock(nextBlock);
-    }
-
-  
-    let blocks = workspace.getTopBlocks(true);
-    blocks.forEach(block => {
-        code += processBlock(block);
-    });
-
-    document.getElementById("scriptOutput").innerText = code || "No script generated yet.";
-}
-
     </script>
 </body>
 </html>
