@@ -1159,6 +1159,22 @@
         // Initialize favorites category
         updateToolbox();
 
+        function wrapText(text, lineLength = 16) {
+            // If text is already shorter than or equal to line length, return it
+            if (text.length <= lineLength) return text;
+            
+            // Initialize result array and current line
+            let result = [];
+            
+            // Break text into 16-character chunks
+            for (let i = 0; i < text.length; i += lineLength) {
+                result.push(text.slice(i, i + lineLength));
+            }
+            
+            // Join chunks with newline
+            return result.join('\n');
+        }
+
         function generateScript() {
             let code = "";
             
@@ -1180,47 +1196,19 @@
                 switch(block.type) {
                     case "input_text":
                         const inputText = block.getFieldValue('TEXT');
-                        return `"${inputText}"`;
+                        return wrapText(`"${inputText}"`);
                     case "text_block":
                         const text = block.getFieldValue('TEXT');
-                        blockCode += `// ${text}\n`;
+                        blockCode += `// ${wrapText(text)}\n`;
+                        break;
+                    case "log_message":
+                        let msg = getInputValue(block, "MESSAGE", '"Log"');
+                        blockCode += `api.log(${wrapText(msg)});\n`;
                         break;
                     case "set_health":
                         let entity = getInputValue(block, "ENTITY", '0');
                         let health = getInputValue(block, "HEALTH", '100');
                         blockCode += `api.setHealth(${entity}, ${health});\n`;
-                        break;
-                    case "log_message":
-                        let msg = getInputValue(block, "MESSAGE", '"Log"');
-                        blockCode += `api.log(${msg});\n`;
-                        break;
-                    case "apply_melee_hit":
-                        let hitter = getInputValue(block, "HITTER", '0');
-                        let target = getInputValue(block, "TARGET", '0');
-                        blockCode += `api.applyMeleeHit(${hitter}, ${target}, [0, 0, 0]);\n`;
-                        break;
-                    case "get_position":
-                        let entityPos = getInputValue(block, "ENTITY", '0');
-                        blockCode += `api.getPosition(${entityPos});\n`;
-                        break;
-                    case "get_player_ids":
-                        blockCode += `api.getPlayerIds();\n`;
-                        break;
-                    case "player_is_in_game":
-                        let playerInGame = getInputValue(block, "PLAYER", '0');
-                        blockCode += `api.playerIsInGame(${playerInGame});\n`;
-                        break;
-                    case "player_is_logged_in":
-                        let playerLoggedIn = getInputValue(block, "PLAYER", '0');
-                        blockCode += `api.playerIsLoggedIn(${playerLoggedIn});\n`;
-                        break;
-                    case "get_block_coordinates":
-                        let playerBlockCoords = getInputValue(block, "PLAYER", '0');
-                        blockCode += `api.getBlockCoordinatesPlayerStandingOn(${playerBlockCoords});\n`;
-                        break;
-                    case "get_block_types":
-                        let playerBlockTypes = getInputValue(block, "PLAYER", '0');
-                        blockCode += `api.getBlockTypesPlayerStandingOn(${playerBlockTypes});\n`;
                         break;
                     case "apply_health_change":
                         let entityHealthChange = getInputValue(block, "HEALTH_CHANGE", '0');
@@ -1410,25 +1398,8 @@
                 code += processBlock(block);
             }
 
-            function formatInto96CharBlocks(script) {
-                if (script.length <= 96) return script;
-                
-                const lines = script.split('\n');
-                const formattedLines = lines.map(line => {
-                    if (line.length <= 96) return line;
-                    
-                    const chunks = [];
-                    for (let i = 0; i < line.length; i += 96) {
-                        chunks.push(line.slice(i, i + 96));
-                    }
-                    return chunks.join('\n');
-                });
-                
-                return formattedLines.join('\n');
-            }
-
-            const formattedCode = formatInto96CharBlocks(code);
-            document.getElementById("scriptOutput").innerText = formattedCode || "No script generated yet.";
+            document.getElementById('scriptOutput').textContent = wrapText(code);
+            return code;
         }
     </script>
 </body>
