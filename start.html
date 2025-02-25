@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Start Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #2E2E2E;
+            color: #FFFFFF;
+            text-align: center;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        h1 {
+            font-size: 36px;
+        }
+
+        .search-box {
+            margin: 20px;
+            display: flex;
+            width: 400px;
+            max-width: 90%;
+            background: #444;
+            padding: 10px;
+            border-radius: 25px;
+            overflow: hidden;
+        }
+
+        .search-box input {
+            flex-grow: 1;
+            padding: 10px;
+            border: none;
+            outline: none;
+            font-size: 16px;
+            background: none;
+            color: #FFF;
+        }
+
+        .search-box button {
+            background: #00b300;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .bookmarks {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .bookmark {
+            background: #555;
+            padding: 15px;
+            border-radius: 10px;
+            text-decoration: none;
+            color: white;
+            font-size: 18px;
+            transition: 0.3s;
+        }
+
+        .bookmark:hover {
+            background: #00b300;
+        }
+    </style>
+</head>
+<body>
+    <h1>Welcome to Xnet</h1>
+    
+    <form class="search-box" action="https://www.google.com/search" method="GET">
+        <input type="text" name="q" placeholder="Search the web...">
+        <button type="submit">Search</button>
+    </form>
+
+    <div class="bookmarks">
+        <a href="https://www.google.com" class="bookmark">Google</a>
+        <a href="https://www.youtube.com" class="bookmark">YouTube</a>
+        <a href="https://github.com" class="bookmark">GitHub</a>
+        <a href="https://www.bing.com" class="bookmark">BloxdForge</a>
+        <a href="https://www.reddit.com" class="bookmark">Reddit</a>
+    </div>
+</body>
+</html>
