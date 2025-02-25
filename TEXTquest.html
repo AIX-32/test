@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Text-Based Adventure</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background-color: #222;
+      color: white;
+    }
+    #log {
+      width: 80%;
+      height: 200px;
+      margin: 20px auto;
+      padding: 10px;
+      background-color: #333;
+      border: 1px solid #555;
+      overflow-y: auto;
+      text-align: left;
+    }
+    button {
+      margin: 5px;
+      padding: 10px;
+      font-size: 16px;
+      cursor: pointer;
+      background-color: #444;
+      color: white;
+      border: none;
+    }
+    button:hover {
+      background-color: #666;
+    }
+    #actionButtons, #battleContainer {
+      margin: 10px;
+    }
+    #inventory {
+      margin-top: 20px;
+      padding: 10px;
+      background-color: #333;
+      width: 80%;
+      margin-left: auto;
+      margin-right: auto;
+      border: 1px solid #555;
+    }
+  </style>
+</head>
+<body>
+  <h1>TEXTquest</h1>
+  <div id="log">Welcome to TEXTquest! You are in a dark room.</div>
+
+  <!-- Exploration Buttons -->
+  <div id="actionButtons">
+    <button onclick="move('north')">Go North</button>
+    <button onclick="move('south')">Go South</button>
+    <button onclick="move('east')">Go East</button>
+    <button onclick="move('west')">Go West</button>
+    <!-- Extra actions will be added here dynamically -->
+    <div id="extraActions"></div>
+  </div>
+
+  <!-- Battle Interface (hidden when not fighting) -->
+  <div id="battleContainer" style="display: none;">
+    <div id="battleStatus"></div>
+    <button onclick="playerAction('attack')">Attack</button>
+    <button onclick="playerAction('block')">Block</button>
+  </div>
+
+  <!-- Inventory Display -->
+  <div id="inventory">
+    <strong>Inventory:</strong> <span id="inventoryItems">Empty</span>
+  </div>
+
+  <script>
+    // Global variables
+    let currentLocation = "dark room";
+    let inBattle = false;
+    let enemyHP = 0;
+    let playerHP = 0;
+    let currentEnemy = "";
+    let currentEnemyAction = "";
+    let inventory = [];
+    // Track defeated enemies by location so battles aren’t repeated
+    let defeatedEnemies = {};
+
+    // Define locations with possible enemy and extra action properties
+    const locations = {
+      "dark room": { north: "forest", south: "cave", east: "castle", west: "village" },
+      "forest": { south: "dark room", east: "mountain", enemy: "Goblin", extra: ["Gather Herbs"] },
+      "cave": { north: "dark room", east: "lake", enemy: "Bat" },
+      "castle": { west: "dark room", north: "desert", extra: ["Explore Throne Room"] },
+      "village": { east: "dark room", south: "ruins", extra: ["Talk to Villagers"] },
+      "mountain": { west: "forest", enemy: "Eagle", extra: ["Climb Peak"] },
+      "lake": { west: "cave", enemy: "Piranha", extra: ["Fish"] },
+      "desert": { south: "castle", enemy: "Scorpion", extra: ["Search for Oasis"] },
+      "ruins": { north: "village", enemy: "Skeleton", extra: ["Search for Treasure"] }
+    };
+
+    const logBox = document.getElementById("log");
+
+    // Log messages to the log box
+    function log(message) {
+      const p = document.createElement("p");
+      p.textContent = message;
+      logBox.appendChild(p);
+      logBox.scrollTop = logBox.scrollHeight;
+    }
+
+    // Update the inventory display
+    function updateInventoryUI() {
+      document.getElementById("inventoryItems").textContent =
+        inventory.length > 0 ? inventory.join(", ") : "Empty";
+    }
+
+    // Update the action buttons (movement and extra actions)
+    function updateActionButtons() {
+      const actionButtons = document.getElementById("actionButtons");
+      const extraActionsDiv = document.getElementById("extraActions");
+      extraActionsDiv.innerHTML = ""; // Clear previous extra buttons
+      if (inBattle) {
+        actionButtons.style.display = "none";
+      } else {
+        actionButtons.style.display = "block";
+        // If the current location has extra actions, add buttons for them
+        if (locations[currentLocation] && locations[currentLocation].extra) {
+          locations[currentLocation].extra.forEach(action => {
+            const btn = document.createElement("button");
+            btn.textContent = action;
+            btn.onclick = function () {
+              extraAction(action);
+            };
+            extraActionsDiv.appendChild(btn);
+          });
+        }
+      }
+    }
+
+    // Update the battle interface
+    function updateBattleUI() {
+      const battleContainer = document.getElementById("battleContainer");
+      const battleStatus = document.getElementById("battleStatus");
+      if (inBattle) {
+        battleContainer.style.display = "block";
+        battleStatus.textContent = `Battle with ${currentEnemy} – Your HP: ${playerHP}, Enemy HP: ${enemyHP}. Enemy is preparing to ${currentEnemyAction}!`;
+      } else {
+        battleContainer.style.display = "none";
+      }
+    }
+
+    // Refresh all UI elements
+    function updateUI() {
+      updateActionButtons();
+      updateBattleUI();
+      updateInventoryUI();
+    }
+
+    // Handle moving between locations
+    function move(direction) {
+      if (inBattle) {
+        log("You can't move while in battle!");
+        return;
+      }
+      if (locations[currentLocation] && locations[currentLocation][direction]) {
+        currentLocation = locations[currentLocation][direction];
+        log(`You moved ${direction} and arrived at the ${currentLocation}.`);
+        // If the location has an enemy and it hasn’t been defeated, start a battle
+        if (locations[currentLocation].enemy && !defeatedEnemies[currentLocation]) {
+          startBattle(locations[currentLocation].enemy);
+        }
+        updateUI();
+      } else {
+        log("You can't go that way.");
+      }
+    }
+
+    // Extra actions (like gathering items or exploring)
+    function extraAction(action) {
+      log(`You chose to ${action} in the ${currentLocation}.`);
+      // For example, extra actions can add items to your inventory:
+      if (action === "Gather Herbs") {
+        inventory.push("Herbs");
+        log("You gathered some healing herbs.");
+      } else if (action === "Explore Throne Room") {
+        inventory.push("Ancient Coin");
+        log("You discovered an Ancient Coin in the Throne Room.");
+      } else if (action === "Talk to Villagers") {
+        log("The villagers share useful information about the area.");
+      } else if (action === "Climb Peak") {
+        inventory.push("Mountain View");
+        log("You climbed the mountain and saw a breathtaking view.");
+      } else if (action === "Fish") {
+        inventory.push("Fish");
+        log("You caught a fish in the lake.");
+      } else if (action === "Search for Oasis") {
+        inventory.push("Oasis Map");
+        log("You found a map that leads to an oasis in the desert.");
+      } else if (action === "Search for Treasure") {
+        inventory.push("Treasure Map");
+        log("You found a map that leads to treasure in the ruins.");
+      }
+      updateUI();
+    }
+
+    // Returns a random element from an array
+    function randomChoice(arr) {
+      return arr[Math.floor(Math.random() * arr.length)];
+    }
+
+    // Begin a battle with an enemy
+    function startBattle(enemyName) {
+      inBattle = true;
+      currentEnemy = enemyName;
+      enemyHP = 3;
+      playerHP = 3;
+      log(`A wild ${enemyName} appears in the ${currentLocation}!`);
+      generateEnemyAction();
+      updateUI();
+    }
+
+    // Randomly choose the enemy’s next action (attack or block)
+    function generateEnemyAction() {
+      currentEnemyAction = randomChoice(["attack", "block"]);
+      log(`The enemy prepares to ${currentEnemyAction}!`);
+    }
+
+    // Handle the player's battle action (attack or block)
+    function playerAction(action) {
+      if (!inBattle) return;
+      // The correct counter: if enemy is attacking, you must block; if enemy is blocking, you must attack.
+      let correctCounter = currentEnemyAction === "attack" ? "block" : "attack";
+      if (action === correctCounter) {
+        enemyHP--;
+        log(`Good job! You countered the ${currentEnemy}. Enemy HP is now ${enemyHP}.`);
+      } else {
+        playerHP--;
+        log(`Oops! You failed to counter. The ${currentEnemy} strikes you. Your HP is now ${playerHP}.`);
+      }
+      // Check for win/lose conditions
+      if (enemyHP <= 0) {
+        log(`You defeated the ${currentEnemy}!`);
+        defeatedEnemies[currentLocation] = true; // Mark enemy as defeated here
+        inventory.push(`${currentEnemy} Loot`); // Add loot to inventory
+        endBattle();
+        return;
+      }
+      if (playerHP <= 0) {
+        log(`You have been defeated by the ${currentEnemy}! Game Over.`);
+        endBattle();
+        return;
+      }
+      // Prepare the next round
+      generateEnemyAction();
+      updateUI();
+    }
+
+    // End the battle and return to exploration mode
+    function endBattle() {
+      inBattle = false;
+      currentEnemy = "";
+      enemyHP = 0;
+      playerHP = 0;
+      if (playerHP <= 0) {
+        log("You have been defeated. Restarting the game...");
+        setTimeout(() => {
+          window.location.reload();
+        }, 2000);
+      } else {
+        log(`You defeated the ${currentEnemy}!`);
+        defeatedEnemies[currentLocation] = true;
+      }
+      updateUI();
+    }
+
+  
+    updateUI();
+  </script>
+</body>
+</html>
