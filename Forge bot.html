@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat with GPT</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #181818; 
+            color: #ffffff; 
+        }
+        #output {
+            width: 300px;
+            height: 150px;
+            padding: 10px;
+            border: 1px solid #ff8c42; 
+            border-radius: 5px;
+            background-color: #282828; 
+            overflow-y: auto;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+        #userInput {
+            width: 300px;
+            padding: 10px;
+            border: 1px solid #ff8c42; 
+            border-radius: 5px;
+            margin-bottom: 10px;
+            background-color: #282828; 
+            color: #ffffff; 
+        }
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background-color: #ff8c42; 
+            color: #181818; 
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #e67e3f; 
+        }
+        .spinner {
+            border: 4px solid #282828; 
+            border-top: 4px solid #ff8c42; 
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0%, 20% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        img[alt="Logo"] {
+            animation: spin 3s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body>
+    <img src="https://imghost.net/ib/Q4w3Wnj3Ctz2MBV_1740586783.png" alt="Logo" style="width: 100px; margin-bottom: 20px;">
+    <div id="output"></div> 
+    <input id="userInput" type="text" placeholder="Ask something..." />
+    <button onclick="askGPT()">Send</button>
+
+    <script src="https://js.puter.com/v2/"></script>
+    <script>
+        // Function to fetch JSON data from a GitHub raw link
+        async function fetchJSONData(url) {
+            try {
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return await response.json();
+            } catch (error) {
+                console.error('Error fetching JSON data:', error);
+                return null;
+            }
+        }
+
+        // Function to handle sending the user's input to the GPT model and displaying the response
+        async function askGPT() {
+            // Get the user's input from the text field
+            const userInput = document.getElementById("userInput").value;
+            // Get the output element where the response will be displayed
+            const output = document.getElementById("output");
+
+            // Display a loading spinner while waiting for the response
+            output.innerHTML = '<div class="spinner"></div>';
+
+            // Fetch additional JSON data from GitHub
+            const jsonData = await fetchJSONData('https://raw.githubusercontent.com/KHROTU/Bloxd-Forge-Web/refs/heads/main/app/assets/src/wiki.json');
+
+            // Define the base system message
+            let systemMessage = "Your name is ´BForge agent´. You can not use bold text or headers. you help the user with info about bloxd.io. You should always try to give short awnsers.";
+
+            // If JSON data is fetched successfully, append it to the system message
+            if (jsonData) {
+                systemMessage += "\n\nAdditional Info: " + JSON.stringify(jsonData);
+            }
+
+            // Combine the system message with the user's input to create the full prompt
+            const fullMessage = `${systemMessage}\n\nUser: ${userInput}`;
+
+            // Send the message to the GPT model using the 'puter' AI API
+            puter.ai.chat(fullMessage).then(response => {
+                // Once the response is received, display it in the output element
+                output.textContent = response;
+            }).catch(error => {
+                // If there's an error, display the error message
+                output.textContent = "Error: " + error.message;
+            });
+        }
+    </script>
+</body>
+</html>
