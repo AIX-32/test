@@ -415,34 +415,37 @@
             }
         }
         
-        let isHidden = false;
-        function hidedock() {
-            const dock = document.getElementById('dock');
-            const folderButton = document.querySelector('.dock-item[onclick="foldermenu()"]');
-            const extraDock = document.getElementById('extra-dock');
-            if (isHidden) {
-                dock.style.display = 'flex';
-                folderButton.style.display = 'flex';
-                extraDock.style.transform = 'scale(1)';
-                isHidden = false;
-            } else {
-                dock.style.display = 'none';
-                folderButton.style.display = 'none';
-                extraDock.style.transform = 'scale(0.8)';
-                isHidden = true;
-            }
-        }
+// For dock visibility
+let isDockHidden = false;
+function hidedock() {
+    const dock = document.getElementById('dock');
+    const folderButton = document.querySelector('.dock-item[onclick="foldermenu()"]');
+    const extraDock = document.getElementById('extra-dock');
+    if (isDockHidden) {
+        dock.style.display = 'flex';
+        folderButton.style.display = 'flex';
+        extraDock.style.transform = 'scale(1)';
+        isDockHidden = false;
+    } else {
+        dock.style.display = 'none';
+        folderButton.style.display = 'none';
+        extraDock.style.transform = 'scale(0.8)';
+        isDockHidden = true;
+    }
+}
 
-        function foldermenu() {
-            const folderMenu = document.getElementById('folder-menu');
-            if (isHidden) {
-                folderMenu.style.visibility = 'visible';
-                isHidden = false;
-            } else {
-                folderMenu.style.visibility = 'hidden';
-                isHidden = true;
-            }
-        }
+// For folder menu visibility
+let isFolderHidden = false;
+function foldermenu() {
+    const folderMenu = document.getElementById('folder-menu');
+    if (isFolderHidden) {
+        folderMenu.style.display = 'block'; // Changed from visibility to display
+        isFolderHidden = false;
+    } else {
+        folderMenu.style.display = 'none'; // Changed from visibility to display
+        isFolderHidden = true;
+    }
+}
 
         function resetiframe(url) {
     const backgroundFrame = document.getElementById('background-frame');
