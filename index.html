@@ -12,6 +12,16 @@
             background-color: #121212;
         }
 
+        #loading-video {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            object-fit: cover;
+            z-index: 9999;
+        }
+
         #background-frame {
             width: 100%;
             height: 100%;
@@ -252,6 +262,9 @@
     </style>
 </head>
 <body>
+    <video id="loading-video" autoplay muted playsinline>
+        <source src="https://github.com/KHROTU/Bloxd-Forge-Web/raw/main/assets/imgs/load.mp4" type="video/mp4">
+    </video>
     <iframe id="background-frame" src="https://www.bloxdforge.com/app/assets/1page.html"></iframe>
 
     <div id="dock">
@@ -456,6 +469,9 @@ function foldermenu() {
     }
     resetiframe('https://www.bloxdforge.com/app/assets/1page.html');
 }
+    document.getElementById('loading-video').addEventListener('ended', function() {
+        this.remove();
+    });
     </script>
 </body>
 </html>
