@@ -1,477 +1,1578 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PTC visualize.</title>
+    <script src="https://unpkg.com/blockly/blockly.min.js"></script>
     <style>
-        body {
+        * {
             margin: 0;
             padding: 0;
-            overflow: hidden;
-            height: 100vh;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #121212;
+            box-sizing: border-box;
         }
 
-        #loading-video {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            object-fit: cover;
-            z-index: 9999;
+        :root {
+            --primary: #df84c0;
+            --secondary: #f1b1b0;
+            --bg-dark: #1a1a1a;
+            --bg-light: #252526;
+            --gradient-primary: linear-gradient(135deg, #df84c0, #f1b1b0);
+            --gradient-hover: linear-gradient(135deg, #f1b1b0, #df84c0);
+            --shadow-soft: 0 4px 20px rgba(223, 132, 192, 0.15);
+            --shadow-strong: 0 8px 30px rgba(223, 132, 192, 0.25);
         }
 
-        #background-frame {
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: var(--bg-dark);
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+            background-size: 20px 20px;
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: linear-gradient(to right, #252526, #1e1e1e);
+            padding: 1.2rem;
+            box-shadow: var(--shadow-soft);
+            position: relative;
+            z-index: 10;
+            border-bottom: 1px solid rgba(223, 132, 192, 0.1);
+        }
+
+        .header h2 {
+            font-size: 1.8rem;
+            font-weight: 800;
+            margin: 0;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            display: inline-block;
+            letter-spacing: -0.02em;
+            text-shadow: 0 2px 10px rgba(223, 132, 192, 0.2);
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            max-width: 1400px;
+            margin: 0 auto;
             width: 100%;
-            height: 100%;
-            border: none;
-            z-index: 1;
-            position: absolute;
         }
 
-        .window {
-            position: absolute;
-            background: #303030;
+        #blocklyDiv {
+            height: 600px;
+            width: 100%;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: var(--shadow-soft);
+            background: var(--bg-light);
+            border: 1px solid rgba(223, 132, 192, 0.1);
+            transition: box-shadow 0.3s ease;
+        }
+
+        #blocklyDiv:hover {
+            box-shadow: var(--shadow-strong);
+        }
+
+        .output-section {
+            background: var(--bg-light);
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow-soft);
+            border: 1px solid rgba(223, 132, 192, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .output-section:hover {
+            box-shadow: var(--shadow-strong);
+        }
+
+        .output-section h3 {
+            font-size: 1.2rem;
+            font-weight: 500;
+            margin-bottom: 1rem;
+            color: var(--primary);
+            opacity: 0.9;
+        }
+
+        pre {
+            background: var(--bg-dark);
+            padding: 1.2rem;
+            border-radius: 12px;
+            text-align: left;
+            overflow-x: auto;
+            border: 1px solid rgba(223, 132, 192, 0.1);
+            font-family: 'Consolas', monospace;
+            font-size: 0.9rem;
+            line-height: 1.4;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .controls {
+            display: flex;
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        button {
+            padding: 0.8rem 1.5rem;
+            background: var(--gradient-primary);
+            border: none;
+            color: white;
+            font-weight: 500;
+            cursor: pointer;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-soft);
+            position: relative;
+            overflow: hidden;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-strong);
+            background: var(--gradient-hover);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        /* Blockly Customization */
+        .blocklyMainBackground {
+            fill: var(--bg-light) !important;
+        }
+
+        .blocklyToolboxDiv {
+            background-color: var(--bg-light) !important;
+            color: #ffffff !important;
+            border-right: 1px solid rgba(223, 132, 192, 0.1);
+            padding: 0.5rem;
+        }
+
+        .blocklyTreeRow {
+            height: auto !important;
+            padding: 8px !important;
+            margin: 4px 0 !important;
             border-radius: 10px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            overflow: hidden;
-            min-width: 700px;
-            min-height: 400px;
-            width: 900px;  
-            height: 700px; 
+            transition: background-color 0.2s ease;
         }
 
-        .window-header {
-            height: 32px;
-            background: #252525;
-            display: flex;
-            align-items: center;
-            padding: 0 10px;
-            cursor: move;
-            user-select: none;
-            border-bottom: 1px solid #1d1d1d;
+        .blocklyTreeRow:hover {
+            background-color: rgba(223, 132, 192, 0.1) !important;
         }
 
-        .close-button {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            background: #ff5f57;
-            margin-right: 8px;
-            cursor: pointer;
+        .blocklyTreeLabel {
+            color: rgba(255, 255, 255, 0.9) !important;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            font-size: 13px;
+            padding: 0 8px !important;
+            display: inline-block !important;
+            vertical-align: middle !important;
         }
 
-        .set-main-button {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            background: #ffd857;
-            margin-right: 8px;
-            cursor: pointer;
+        .blocklyTreeIcon {
+            display: none !important;
         }
 
-        .hide-button {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            background: #90ff86;
-            margin-right: 8px;
-            cursor: pointer;
+        .blocklyFlyoutBackground {
+            fill: var(--bg-light) !important;
+            stroke: rgba(223, 132, 192, 0.1);
         }
 
-        .window-content {
-            height: calc(100% - 32px);
+        .blocklyEditableText > text {
+            fill: white !important;
+        }
+
+        .blocklyEditableText > rect {
+            fill: rgba(223, 132, 192, 0.1) !important;
+            rx: 6px;
+        }
+
+        .blocklyEditableText:hover > rect {
+            fill: rgba(223, 132, 192, 0.2) !important;
+            stroke: rgba(223, 132, 192, 0.3) !important;
+        }
+
+        .blocklySelected > .blocklyPath {
+            stroke: var(--primary) !important;
+            stroke-width: 2px !important;
+        }
+
+        .blocklyResizeSE {
+            fill: var(--primary) !important;
+        }
+
+        .blocklyPath {
+            filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.2));
+            transition: filter 0.2s ease;
+        }
+
+        .blocklySelected > .blocklyPath {
+            filter: drop-shadow(0px 4px 8px rgba(223, 132, 192, 0.3));
+        }
+
+        .blocklyDragging > .blocklyPath {
+            filter: drop-shadow(0px 6px 12px rgba(223, 132, 192, 0.4));
+        }
+
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-dark);
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(var(--primary), var(--secondary));
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(var(--secondary), var(--primary));
+        }
+
+        /* Search bar styles */
+        .search-container {
+            padding: 1rem;
+            background: var(--bg-light);
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            box-shadow: var(--shadow-soft);
+            border: 1px solid rgba(223, 132, 192, 0.1);
+        }
+
+        .search-input {
             width: 100%;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            border: 1px solid rgba(223, 132, 192, 0.2);
+            background: var(--bg-dark);
+            color: white;
+            font-size: 14px;
         }
 
-        .window-iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-        }
-
-        .window-title {
-            color: #fff;
-        }
-
-        #extra-dock {
-            position: fixed;
-            bottom: 20px;
-            right: calc(50% + 270px);
-            background: #252525;
-            backdrop-filter: blur(10px);
-            border-radius: 16px;
-            padding: 8px;
-            display: flex; 
-            z-index: 1000;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-        }
-
-        .extra-dock-item {
-            width: 48px;
-            height: 48px;
-            cursor: pointer;
-            transition: transform 0.2s;
-            background: #303030;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            margin-left: 4px;
-            margin-right: 4px;
-            
-        }
-
-        .extra-dock-item:first-child {
-            
-            width: 48px;
-            height: 48px;
-            cursor: pointer;
-            transition: transform 0.2s;
-            background: #303030;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-
-        }
-
-        .extra-dock-item i {
-            color: #d8d1c7;
-            font-size: 20px;
-        }
-
-        .extra-dock-item:hover {
-            transform: scale(1.06);
-            outline: 2px solid #ff6600;
-        }
-
-        /* ###################################################################*/
-
-        #dock {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #252525;
-            backdrop-filter: blur(10px);
-            border-radius: 16px;
-            padding: 8px;
-            display: flex;
-            gap: 12px;
-            z-index: 1000;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-        }
-
-        .dock-item {
-            width: 48px;
-            height: 48px;
-            cursor: pointer;
-            transition: transform 0.2s;
-            background: #303030;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            
-        }
-
-        .dock-item:hover {
-            transform: scale(1.06);
-            outline: 2px solid #ff6600;
-        }
-
-        .dock-item i {
-            color: #d8d1c7;
-            font-size: 20px;
-        }
-
-        .dock-item:first-child {
-            margin-right: 20px;
-            background-color: transparent;
-            box-shadow: none;
+        .search-input:focus {
             outline: none;
-            border: none;
-            cursor: default
-
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(223, 132, 192, 0.2);
         }
 
-        .dock-item:last-child {
-            margin-left: 20px;
+        /* Block tooltip styles */
+        .blocklyTooltip {
+            background-color: rgba(32, 33, 36, 0.9) !important;
+            border-radius: 4px !important;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2) !important;
+            color: rgba(255, 255, 255, 0.9) !important;
+            font-family: 'Segoe UI', Arial, sans-serif !important;
+            font-size: 13px !important;
+            line-height: 1.5 !important;
+            max-width: 250px !important;
+            padding: 8px 12px !important;
+            text-align: left !important;
+            white-space: normal !important;
+            word-wrap: break-word !important;
+            z-index: 9999 !important;
+        }
+        .blocklyTooltipDiv {
+            opacity: 1 !important;
+            transition: opacity 0.2s ease-in-out !important;
+        }
+        .blocklyTooltipDiv:hover {
+            opacity: 0.9 !important;
         }
 
-        .resize-handle {
+        /* Favorites category styles */
+        .favorite-block {
+            opacity: 0.8;
+            transition: opacity 0.2s;
+        }
+
+        .favorite-block:hover {
+            opacity: 1;
+        }
+
+        .favorite-icon {
             position: absolute;
-            width: 15px;
-            height: 15px;
-            bottom: 0;
-            right: 0;
-            cursor: nwse-resize;
-            background: transparent;
-        }
-
-        #logo img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        #folder-menu {
-            position: fixed;
-            left: calc(50% + 270px);
-            bottom: 20px;
-            background: #252525;
-            backdrop-filter: blur(10px);
-            border-radius: 16px;
-            padding: 8px;
-            display: flex;
-            visibility: hidden;
-            gap: 12px;
-            z-index: 1000;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-            height: 148px;
-        }
-
-        #folder-menu button {
-            width: 148px;
-            height: 48px;
-            margin: 4px;
+            right: 8px;
+            top: 8px;
             cursor: pointer;
-            transition: transform 0.2s;
-            background: #303030;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            outline:none;
-            border:none;
-            color: #d8d1c7;
-            font-size: 15px;
+            color: gold;
+            font-size: 16px;
         }
 
-        #folder-menu button:hover {
-            transform: scale(1.06);
-            outline: 2px solid #ff6600;
+        /* Script board styles */
+        .script-board {
+            background-color: #2d2d2d;
+            border: 1px solid #444;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            padding: 10px;
         }
-
+        .script-board h3 {
+            color: #df84c0;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+        .script-board pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            margin: 0;
+            color: #e0e0e0;
+        }
+        .board-limit-warning {
+            background-color: #ff6b6b;
+            color: white;
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+        }
     </style>
 </head>
 <body>
-    <video id="loading-video" autoplay muted playsinline>
-        <source src="https://github.com/KHROTU/Bloxd-Forge-Web/raw/main/assets/imgs/load.mp4" type="video/mp4">
-    </video>
-    <iframe id="background-frame" src="https://www.bloxdforge.com/app/assets/1page.html"></iframe>
-
-    <div id="dock">
-        <div class="dock-item" id="logo"><img src="https://imghost.net/ib/9g4sU1KafGkkAVR_1742959445.webp" alt="Logo"></div>
-        <div class="dock-item" data-url="https://www.bloxdforge.com/app/assets/2page.html"><i class="fa-solid fa-toolbox"></i></div>
-        <div class="dock-item" data-url="https://www.bloxdforge.com/app/assets/3page.html"><i class="fa-solid fa-tools"></i></div>
-        <div class="dock-item" data-url="https://www.bloxdforge.com/app/assets/4page.html"><i class="fa-solid fa-shopping-cart"></i></div>
-        <div class="dock-item" data-url="https://www.bloxdforge.com/app/assets/5page.html"><i class="fa-solid fa-truck"></i></div>
-        <div class="dock-item" data-url="https://www.bloxdforge.com/app/assets/6page.html"><i class="fa-solid fa-book"></i></div>
-        <div class="dock-item" data-url="https://www.bloxdforge.com/app/assets/7page.html"><i class="fa-solid fa-info-circle"></i></div>
-        <div class="dock-item" data-url="https://www.bloxdforge.com/app/assets/8page.html"><i class="fa-solid fa-unlock-keyhole"></i></div>
+    <div class="header">
+        <h2>PTC visualize.</h2>
+    </div>
+    
+    <div class="main-content">
+        <div class="search-container">
+            <input type="text" class="search-input" placeholder="Search blocks..." id="blockSearch">
+        </div>
+        <div id="blocklyDiv"></div>
+        
+        <div class="controls">
+            <button onclick="generateScript()">Generate Script</button>
+        </div>
+        
+        <div class="output-section">
+            <h3>Generated PTC Script</h3>
+            <div id="scriptOutput"></div>
+        </div>
     </div>
 
-    <div id="extra-dock">
-        <div class="extra-dock-item" onclick="hidedock()"><i class="fas fa-expand"></i></div>
-        <div class="extra-dock-item" onclick="resetiframe()"><i class="fas fa-house"></i></div>
-        <div class="extra-dock-item" onclick="foldermenu()"><i class="fas fa-folder"></i></div>
-    </div>
+    <xml id="toolbox" style="display: none">
+        <category name="Input" colour="#df84c0">
+            <block type="input_text"></block>
+            <block type="text_block"></block>
+        </category>
 
-    <div id="folder-menu">
-        <button>Upload folder</button>
-    </div>
+        <category name="Player Health" colour="#d975b7">
+            <block type="set_health"></block>
+            <block type="apply_health_change"></block>
+            <block type="set_shield_amount"></block>
+            <block type="get_shield_amount"></block>
+        </category>
+
+        <category name="Combat" colour="#d367ae">
+            <block type="apply_melee_hit"></block>
+        </category>
+
+        <category name="Player Info" colour="#cd58a5">
+            <block type="get_position"></block>
+            <block type="get_player_ids"></block>
+            <block type="player_is_in_game"></block>
+            <block type="player_is_logged_in"></block>
+        </category>
+
+        <category name="Block Operations" colour="#c7499c">
+            <block type="get_block_coordinates"></block>
+            <block type="get_block_types"></block>
+        </category>
+
+        <category name="Game UI" colour="#c13a93">
+            <block type="log_message"></block>
+            <block type="show_shop_tutorial"></block>
+        </category>
+
+        <category name="Camera Controls" colour="#bb2c8a">
+            <block type="set_camera_direction"></block>
+            <block type="set_camera_zoom"></block>
+        </category>
+
+        <category name="Player Appearance" colour="#b51d81">
+            <block type="set_player_opacity"></block>
+            <block type="set_player_opacity_for_one"></block>
+            <block type="set_player_pose"></block>
+            <block type="scale_player_mesh_nodes"></block>
+            <block type="update_entity_node_mesh"></block>
+        </category>
+
+        <category name="Block Information" colour="#af0e78">
+            <block type="get_block_coordinates"></block>
+            <block type="get_block_types"></block>
+            <block type="get_block_id"></block>
+            <block type="get_meta_info"></block>
+            <block type="block_name_to_id"></block>
+            <block type="block_id_to_name"></block>
+        </category>
+
+        <category name="Block Manipulation" colour="#a0086e">
+            <block type="set_cant_change_block"></block>
+            <block type="set_cant_change_block_type"></block>
+            <block type="reset_can_change_block_type"></block>
+            <block type="set_walk_through_type"></block>
+            <block type="set_walk_through_rect"></block>
+        </category>
+
+        <category name="World Utilities" colour="#910265">
+            <block type="get_entities_in_rect"></block>
+            <block type="block_coord_to_chunk"></block>
+            <block type="is_block_in_loaded_chunk"></block>
+            <block type="is_inside_rect"></block>
+            <block type="chunk_id_to_bot_left_coord"></block>
+            <block type="raycast_for_block"></block>
+        </category>
+
+        <category name="Inventory" colour="#82015c">
+            <block type="get_selected_inventory_slot"></block>
+            <block type="get_held_item"></block>
+            <block type="get_inventory_free_slots"></block>
+            <block type="get_chest_free_slots"></block>
+            <block type="get_chest_item_amount"></block>
+            <block type="has_item"></block>
+            <block type="remove_item"></block>
+            <block type="clear_inventory"></block>
+            <block type="inventory_is_full"></block>
+        </category>
+    </xml>
 
     <script>
-        let zIndex = 2;
-        let isDragging = false;
-        let isResizing = false;
-        let currentWindow = null;
-        let startX, startY, startWidth, startHeight;
+        let workspace = Blockly.inject('blocklyDiv', {
+            toolbox: document.getElementById('toolbox'),
+            zoom: {
+                controls: true,
+                wheel: true,
+                startScale: 1.0,
+                maxScale: 3,
+                minScale: 0.3,
+                scaleSpeed: 1.2,
+                pinch: true
+            },
+            move: {
+                scrollbars: true,
+                drag: true,
+                wheel: true
+            },
+            theme: Blockly.Themes.Custom,
+            renderer: 'zelos',
+            grid: {
+                spacing: 25,
+                length: 3,
+                colour: '#df84c0',
+                snap: true
+            }
+        });
 
-        let hiddenWindows = new Map();
+        Blockly.defineBlocksWithJsonArray([
+            {
+                "type": "input_text",
+                "message0": "Input: %1",
+                "args0": [
+                    {
+                        "type": "input_value",
+                        "name": "TEXT"
+                    }
+                ],
+                "previousStatement": null,
+                "nextStatement": null,
+                "colour": "#df84c0",
+                "tooltip": "Capture and store text input from the user. Useful for getting dynamic text-based information during script generation."
+            },
+            {
+                "type": "text_block",
+                "message0": "Text: %1",
+                "args0": [
+                    {
+                        "type": "field_input",
+                        "name": "TEXT",
+                        "text": "Enter text here"
+                    }
+                ],
+                "output": "String",
+                "colour": "#df84c0",
+                "tooltip": "Create a static text block with a predefined or custom text value. Can be used to provide constant string inputs."
+            },
+            {
+                "type": "set_health",
+                "message0": "Set Player Health to %1",
+                "args0": [
+                    {
+                        "type": "input_value",
+                        "name": "HEALTH"
+                    }
+                ],
+                "previousStatement": null,
+                "nextStatement": null,
+                "colour": "#d975b7",
+                "tooltip": "Directly set a player's health to a specific value. Useful for healing, damaging, or resetting player health in game scenarios."
+            },
+            {
+                "type": "apply_health_change",
+                "message0": "%1 Player Health by %2",
+                "args0": [
+                    {
+                        "type": "field_dropdown",
+                        "name": "OPERATION",
+                        "options": [
+                            ["Increase", "ADD"],
+                            ["Decrease", "SUBTRACT"]
+                        ]
+                    },
+                    {
+                        "type": "input_value",
+                        "name": "AMOUNT"
+                    }
+                ],
+                "previousStatement": null,
+                "nextStatement": null,
+                "colour": "#d975b7",
+                "tooltip": "Modify a player's health by adding or subtracting a specific amount. Provides a dynamic way to adjust health during gameplay."
+            },
+            {
+                "type": "set_shield_amount",
+                "message0": "Set Shield Amount to %1",
+                "args0": [
+                    {
+                        "type": "input_value",
+                        "name": "SHIELD"
+                    }
+                ],
+                "previousStatement": null,
+                "nextStatement": null,
+                "colour": "#d975b7",
+                "tooltip": "Directly set a player's shield amount to a specific value. Useful for managing defensive capabilities."
+            },
+            {
+                "type": "get_shield_amount",
+                "message0": "Get Player Shield Amount",
+                "output": "Number",
+                "colour": "#d975b7",
+                "tooltip": "Retrieve the current shield amount for a player. Can be used in conditional logic or calculations."
+            },
+            {
+                "type": "apply_melee_hit",
+                "message0": "Apply Melee Hit to Player %1 with Damage %2",
+                "args0": [
+                    {
+                        "type": "input_value",
+                        "name": "PLAYER"
+                    },
+                    {
+                        "type": "input_value",
+                        "name": "DAMAGE"
+                    }
+                ],
+                "previousStatement": null,
+                "nextStatement": null,
+                "colour": "#d367ae",
+                "tooltip": "Simulate a melee attack on a specific player, applying a defined amount of damage. Useful for combat mechanics."
+            },
+            {
+                "type": "get_position",
+                "message0": "Get Player Position",
+                "output": "Array",
+                "colour": "#cd58a5",
+                "tooltip": "Retrieve the current 3D coordinates (x, y, z) of a player. Helpful for spatial awareness and positioning-based logic."
+            },
+            {
+                "type": "get_player_ids",
+                "message0": "Get Player IDs",
+                "output": "Array",
+                "colour": "#cd58a5",
+                "tooltip": "Retrieve a list of all active player identifiers in the current game session. Useful for iterating or selecting players."
+            },
+            {
+                "type": "player_is_in_game",
+                "message0": "Player %1 is in Game",
+                "args0": [
+                    {
+                        "type": "input_value",
+                        "name": "PLAYER"
+                    }
+                ],
+                "output": "Boolean",
+                "colour": "#cd58a5",
+                "tooltip": "Check if a specific player is currently active in the game. Returns true if the player is present, false otherwise."
+            },
+            {
+                "type": "log_message",
+                "message0": "Log message %1",
+                "args0": [
+                    { "type": "input_value", "name": "MESSAGE" }
+                ],
+                "previousStatement": null,
+                "nextStatement": null,
+                "colour": "#c13a93",
+                "tooltip": "Record a message in the game's log system. Useful for debugging, tracking events, or creating game narratives."
+            },
+            {
+                "type": "get_block_coordinates",
+                "message0": "Get block coordinates player %1 is standing on",
+                "args0": [
+                    { "type": "input_value", "name": "PLAYER" }
+                ],
+                "output": "Array",
+                "colour": "#c7499c",
+                "tooltip": "Retrieve the 3D coordinates of a block associated with a specific player. Helpful for spatial tracking and block-based interactions."
+            },
+            {
+                "type": "get_block_types",
+                "message0": "Get block types player %1 is standing on",
+                "args0": [
+                    { "type": "input_value", "name": "PLAYER" }
+                ],
+                "output": "Array",
+                "colour": "#c7499c",
+                "tooltip": "Obtain a list of block types associated with a specific player. Useful for inventory or environment analysis."
+            },
+            {
+                "type": "get_block_id",
+                "message0": "Get block ID at x: %1 y: %2 z: %3",
+                "args0": [
+                    { "type": "input_value", "name": "X" },
+                    { "type": "input_value", "name": "Y" },
+                    { "type": "input_value", "name": "Z" }
+                ],
+                "output": "Number",
+                "colour": "#af0e78",
+                "tooltip": "Retrieve the unique identifier of a block at specific 3D coordinates. Essential for precise block identification."
+            },
+            {
+                "type": "get_entities_in_rect",
+                "message0": "Get entities in rectangle from %1 to %2",
+                "args0": [
+                    { "type": "input_value", "name": "MIN_COORDS" },
+                    { "type": "input_value", "name": "MAX_COORDS" }
+                ],
+                "output": "Array",
+                "colour": "#910265",
+                "tooltip": "Retrieve all entities within a rectangular area defined by minimum and maximum coordinates. Useful for area-based entity detection."
+            },
+            {
+                "type": "get_meta_info",
+                "message0": "Get meta info for block %1",
+                "args0": [
+                    { "type": "input_value", "name": "BLOCK_NAME" }
+                ],
+                "output": "String",
+                "colour": "#af0e78",
+                "tooltip": "Retrieve additional metadata information for a specific block. Provides extended details about block properties."
+            },
+            {
+                "type": "set_cant_change_block",
+                "message0": "Set block at x: %1 y: %2 z: %3 unchangeable for player %4",
+                "args0": [
+                    { "type": "input_value", "name": "X" },
+                    { "type": "input_value", "name": "Y" },
+                    { "type": "input_value", "name": "Z" },
+                    { "type": "input_value", "name": "PLAYER" }
+                ],
+                "previousStatement": null,
+                "nextStatement": null,
+                "colour": "#a0086e",
+                "tooltip": "Prevent a specific player from modifying a block at given coordinates. Useful for creating protected or restricted areas."
+            },
+            {
+                "type": "set_cant_change_block_type",
+                "message0": "Prevent player %2 from changing block type %1",
+                "args0": [
+                    { "type": "input_value", "name": "BLOCK_NAME" },
+                    { "type": "input_value", "name": "PLAYER" }
+                ],
+                "previousStatement": null,
+                "nextStatement": null,
+                "colour": "#a0086e",
+                "tooltip": "Restrict a player from changing a specific type of block. Helps maintain game balance or create gameplay constraints."
+            },
+            {
+                "type": "set_walk_through_type",
+                "message0": "Set walk-through for block type %1 player %2 disable: %3",
+                "args0": [
+                    { "type": "input_value", "name": "BLOCK_NAME" },
+                    { "type": "input_value", "name": "PLAYER" },
+                    { "type": "input_value", "name": "DISABLE" }
+                ],
+                "previousStatement": null,
+                "nextStatement": null,
+                "colour": "#a0086e",
+                "tooltip": "Control whether a player can walk through a specific type of block. Enables or disables block collision for individual players."
+            },
+            {
+                "type": "set_walk_through_rect",
+                "message0": "Set walk-through rectangle from %1 to %2 for player %3",
+                "args0": [
+                    { "type": "input_value", "name": "POS1" },
+                    { "type": "input_value", "name": "POS2" },
+                    { "type": "input_value", "name": "PLAYER" }
+                ],
+                "previousStatement": null,
+                "nextStatement": null,
+                "colour": "#a0086e",
+                "tooltip": "Define a rectangular area where a specific player can or cannot walk through. Provides advanced movement restriction capabilities."
+            },
+            {
+                "type": "block_name_to_id",
+                "message0": "Convert block name %1 to ID allow invalid: %2",
+                "args0": [
+                    { "type": "input_value", "name": "BLOCK_NAME" },
+                    { "type": "input_value", "name": "ALLOW_INVALID" }
+                ],
+                "output": "Number",
+                "colour": "#af0e78",
+                "tooltip": "Convert a block name to its corresponding unique identifier. Useful for block identification and manipulation."
+            },
+            {
+                "type": "block_id_to_name",
+                "message0": "Convert block ID %1 to name",
+                "args0": [
+                    { "type": "input_value", "name": "BLOCK_ID" }
+                ],
+                "output": "String",
+                "colour": "#af0e78",
+                "tooltip": "Retrieve the name of a block based on its unique identifier. Essential for block identification and analysis."
+            },
+            {
+                "type": "block_coord_to_chunk",
+                "message0": "Convert block coordinates %1 to chunk ID",
+                "args0": [
+                    { "type": "input_value", "name": "COORDS" }
+                ],
+                "output": "String",
+                "colour": "#910265",
+                "tooltip": "Transform block coordinates into a chunk identifier. Useful for spatial organization and chunk-based operations."
+            },
+            {
+                "type": "is_block_in_loaded_chunk",
+                "message0": "Is block loaded at x: %1 y: %2 z: %3",
+                "args0": [
+                    { "type": "input_value", "name": "X" },
+                    { "type": "input_value", "name": "Y" },
+                    { "type": "input_value", "name": "Z" }
+                ],
+                "output": "Boolean",
+                "colour": "#910265",
+                "tooltip": "Check if a block at specific coordinates is currently loaded in the game world. Useful for determining block visibility and accessibility."
+            },
+            {
+                "type": "is_inside_rect",
+                "message0": "Is coordinates %1 inside rectangle from %2 to %3 add one to max: %4",
+                "args0": [
+                    { "type": "input_value", "name": "CHECK_COORDS" },
+                    { "type": "input_value", "name": "POS1" },
+                    { "type": "input_value", "name": "POS2" },
+                    { "type": "input_value", "name": "ADD_ONE" }
+                ],
+                "output": "Boolean",
+                "colour": "#910265",
+                "tooltip": "Determine if a set of coordinates falls within a rectangular area defined by minimum and maximum coordinates. Useful for spatial checks and collision detection."
+            },
+            {
+                "type": "chunk_id_to_bot_left_coord",
+                "message0": "Get bottom left coordinates of chunk %1",
+                "args0": [
+                    { "type": "input_value", "name": "CHUNK_ID" }
+                ],
+                "output": "Array",
+                "colour": "#910265",
+                "tooltip": "Retrieve the bottom-left coordinates of a chunk based on its identifier. Essential for chunk-based positioning and spatial calculations."
+            },
+            {
+                "type": "reset_can_change_block_type",
+                "message0": "Reset can change block type %1 for player %2",
+                "args0": [
+                    { "type": "input_value", "name": "BLOCK_NAME" },
+                    { "type": "input_value", "name": "PLAYER" }
+                ],
+                "previousStatement": null,
+                "nextStatement": null,
+                "colour": "#a0086e",
+                "tooltip": "Revert a player's ability to change a specific block type. Useful for resetting gameplay constraints or permissions."
+            },
+            {
+                "type": "raycast_for_block",
+                "message0": "Raycast from position %1 in direction %2",
+                "args0": [
+                    { "type": "input_value", "name": "FROM_POS" },
+                    { "type": "input_value", "name": "DIR_VEC" }
+                ],
+                "output": "Object",
+                "colour": "#910265",
+                "tooltip": "Perform a raycast from a given position in a specified direction. Returns information about the first block intersected by the ray. Useful for advanced spatial queries and collision detection."
+            },
+            {
+                "type": "apply_health_change",
+                "message0": "Apply health change of %1 to %2",
+                "args0": [
+                    { "type": "input_value", "name": "HEALTH_CHANGE" },
+                    { "type": "input_value", "name": "ENTITY" }
+                ],
+                "previousStatement": null,
+                "nextStatement": null,
+                "colour": "#d975b7",
+                "tooltip": "Dynamically modify an entity's health by adding or subtracting a specified amount. Useful for implementing damage, healing, or health-based game mechanics."
+            },
+            {
+                "type": "set_shield_amount",
+                "message0": "Set shield amount of %1 to %2",
+                "args0": [
+                    { "type": "input_value", "name": "ENTITY" },
+                    { "type": "input_value", "name": "SHIELD" }
+                ],
+                "previousStatement": null,
+                "nextStatement": null,
+                "colour": "#d975b7",
+                "tooltip": "Directly set the shield amount of an entity to a specific value. Useful for managing defensive capabilities."
+            },
+            {
+                "type": "get_shield_amount",
+                "message0": "Get shield amount for %1",
+                "args0": [
+                    { "type": "input_value", "name": "ENTITY" }
+                ],
+                "output": "Number",
+                "colour": "#d975b7",
+                "tooltip": "Retrieve the current shield amount for a specific entity. Essential for tracking defensive capabilities and implementing shield-based gameplay elements."
+            },
+            {
+                "type": "show_shop_tutorial",
+                "message0": "Show shop tutorial for %1",
+                "args0": [
+                    { "type": "input_value", "name": "PLAYER" }
+                ],
+                "previousStatement": null,
+                "nextStatement": null,
+                "colour": "#c13a93",
+                "tooltip": "Trigger the shop tutorial interface for a specific player. Useful for guiding players through in-game purchasing mechanics."
+            },
+            {
+                "type": "set_camera_direction",
+                "message0": "Set camera direction for player %1 direction %2",
+                "args0": [
+                    { "type": "input_value", "name": "PLAYER" },
+                    { "type": "input_value", "name": "DIRECTION" }
+                ],
+                "previousStatement": null,
+                "nextStatement": null,
+                "colour": "#bb2c8a",
+                "tooltip": "Adjust the camera orientation for a specific player. Allows precise control over the player's view perspective."
+            },
+            {
+                "type": "set_camera_zoom",
+                "message0": "Set camera zoom for player %1 zoom %2",
+                "args0": [
+                    { "type": "input_value", "name": "PLAYER" },
+                    { "type": "input_value", "name": "ZOOM" }
+                ],
+                "previousStatement": null,
+                "nextStatement": null,
+                "colour": "#bb2c8a",
+                "tooltip": "Modify the camera zoom level for a specific player. Control the field of view and visual proximity."
+            },
+            {
+                "type": "set_player_opacity",
+                "message0": "Set opacity for player %1 opacity %2",
+                "args0": [
+                    { "type": "input_value", "name": "PLAYER" },
+                    { "type": "input_value", "name": "OPACITY" }
+                ],
+                "previousStatement": null,
+                "nextStatement": null,
+                "colour": "#b51d81",
+                "tooltip": "Change the overall visibility of a player. Useful for creating transparency, invisibility, or visual effects."
+            },
+            {
+                "type": "set_player_opacity_for_one",
+                "message0": "Set player %1 opacity to %2 for viewer %3",
+                "args0": [
+                    { "type": "input_value", "name": "TARGET_PLAYER" },
+                    { "type": "input_value", "name": "OPACITY" },
+                    { "type": "input_value", "name": "VIEWER_PLAYER" }
+                ],
+                "previousStatement": null,
+                "nextStatement": null,
+                "colour": "#b51d81",
+                "tooltip": "Set a specific player's opacity as seen by another player. Enables personalized visibility settings."
+            },
+            {
+                "type": "set_player_pose",
+                "message0": "Set pose for player %1 pose %2",
+                "args0": [
+                    { "type": "input_value", "name": "PLAYER" },
+                    { "type": "input_value", "name": "POSE" }
+                ],
+                "previousStatement": null,
+                "nextStatement": null,
+                "colour": "#b51d81",
+                "tooltip": "Change the player's current pose or animation state. Useful for controlling player animations and interactions."
+            },
+            {
+                "type": "scale_player_mesh_nodes",
+                "message0": "Scale mesh nodes for player %1 scales %2",
+                "args0": [
+                    { "type": "input_value", "name": "PLAYER" },
+                    { "type": "input_value", "name": "SCALES" }
+                ],
+                "previousStatement": null,
+                "nextStatement": null,
+                "colour": "#b51d81",
+                "tooltip": "Adjust the scale of a player's mesh nodes. Allows dynamic resizing of player character components."
+            },
+            {
+                "type": "update_entity_node_mesh",
+                "message0": "Update entity %1 node mesh Type: %2 Node: %3 Offset: %4 Rotation: %5",
+                "args0": [
+                    { "type": "input_value", "name": "ENTITY" },
+                    { "type": "input_value", "name": "TYPE" },
+                    { "type": "input_value", "name": "NODE" },
+                    { "type": "input_value", "name": "OFFSET" },
+                    { "type": "input_value", "name": "ROTATION" }
+                ],
+                "previousStatement": null,
+                "nextStatement": null,
+                "colour": "#b51d81",
+                "tooltip": "Modify an entity's node mesh with precise control over type, node, offset, and rotation. Advanced mesh manipulation."
+            },
+            {
+                "type": "get_selected_inventory_slot",
+                "message0": "Get selected inventory slot of player %1",
+                "args0": [
+                    { "type": "input_value", "name": "PLAYER" }
+                ],
+                "output": "Number",
+                "colour": "#82015c",
+                "tooltip": "Retrieve the currently selected inventory slot for a specific player. Useful for tracking active item selection."
+            },
+            {
+                "type": "get_held_item",
+                "message0": "Get held item of player %1",
+                "args0": [
+                    { "type": "input_value", "name": "PLAYER" }
+                ],
+                "output": "String",
+                "colour": "#82015c",
+                "tooltip": "Identify the item currently being held by a player. Helps track player equipment and interactions."
+            },
+            {
+                "type": "get_inventory_free_slots",
+                "message0": "Get free inventory slots of player %1",
+                "args0": [
+                    { "type": "input_value", "name": "PLAYER" }
+                ],
+                "output": "Number",
+                "colour": "#82015c",
+                "tooltip": "Count the number of available empty slots in a player's inventory. Useful for inventory management."
+            },
+            {
+                "type": "get_chest_free_slots",
+                "message0": "Get free slots in chest at position %1",
+                "args0": [
+                    { "type": "input_value", "name": "POSITION" }
+                ],
+                "output": "Number",
+                "colour": "#82015c",
+                "tooltip": "Determine the number of empty slots in a chest at a specific location. Helps with storage and item management."
+            },
+            {
+                "type": "get_chest_item_amount",
+                "message0": "Get amount of item %1 in chest at position %2",
+                "args0": [
+                    { "type": "input_value", "name": "ITEM_NAME" },
+                    { "type": "input_value", "name": "POSITION" }
+                ],
+                "output": "Number",
+                "colour": "#82015c",
+                "tooltip": "Count the quantity of a specific item in a chest at a given location. Useful for inventory tracking."
+            },
+            {
+                "type": "has_item",
+                "message0": "Player %1 has item %2",
+                "args0": [
+                    { "type": "input_value", "name": "PLAYER" },
+                    { "type": "input_value", "name": "ITEM_NAME" }
+                ],
+                "output": "Boolean",
+                "colour": "#82015c",
+                "tooltip": "Check if a player possesses a specific item. Returns true if the item is in the player's inventory."
+            },
+            {
+                "type": "remove_item",
+                "message0": "Remove %1 of item %2 from player %3",
+                "args0": [
+                    { "type": "input_value", "name": "AMOUNT" },
+                    { "type": "input_value", "name": "ITEM_NAME" },
+                    { "type": "input_value", "name": "PLAYER" }
+                ],
+                "previousStatement": null,
+                "nextStatement": null,
+                "colour": "#82015c",
+                "tooltip": "Remove a specified quantity of an item from a player's inventory. Useful for item consumption or trading."
+            },
+            {
+                "type": "clear_inventory",
+                "message0": "Clear inventory of player %1",
+                "args0": [
+                    { "type": "input_value", "name": "PLAYER" }
+                ],
+                "previousStatement": null,
+                "nextStatement": null,
+                "colour": "#82015c",
+                "tooltip": "Completely empty a player's inventory, removing all items. Use with caution as this is an irreversible action."
+            },
+            {
+                "type": "inventory_is_full",
+                "message0": "Inventory is full for player %1",
+                "args0": [
+                    { "type": "input_value", "name": "PLAYER" }
+                ],
+                "output": "Boolean",
+                "colour": "#82015c",
+                "tooltip": "Check if a player's inventory has reached its maximum capacity. Returns true if no more items can be added."
+            }
+        ]);
 
-        document.querySelectorAll('.dock-item:not(#logo)').forEach(item => {
-            item.addEventListener('click', () => {
-                const hiddenWindow = hiddenWindows.get(item.dataset.url);
-                if (hiddenWindow) {
-                    hiddenWindow.style.display = 'block';
-                    item.style.borderBottom = 'none';
-                    hiddenWindows.delete(item.dataset.url);
-                } else {
-                    createWindow(item.dataset.url);
+        Blockly.Themes.Custom = Blockly.Theme.defineTheme('custom', {
+            'base': Blockly.Themes.Classic,
+            'componentStyles': {
+                'workspaceBackgroundColour': '#1e1e1e',
+                'toolboxBackgroundColour': '#252526',
+                'toolboxForegroundColour': '#fff',
+                'flyoutBackgroundColour': '#252526',
+                'flyoutForegroundColour': '#fff',
+                'flyoutOpacity': 0.9,
+                'scrollbarColour': '#df84c0',
+                'insertionMarkerColour': '#fff',
+                'insertionMarkerOpacity': 0.3,
+                'scrollbarOpacity': 0.4,
+                'cursorColour': '#fff'
+            },
+            'blockStyles': {
+                'input_blocks': {
+                    'colourPrimary': '#df84c0',
+                    'colourSecondary': '#f1b1b0',
+                    'colourTertiary': '#e698b7'
+                },
+                'player_health_blocks': {
+                    'colourPrimary': '#d975b7',
+                    'colourSecondary': '#d367ae',
+                    'colourTertiary': '#cd58a5'
+                },
+                'combat_blocks': {
+                    'colourPrimary': '#d367ae',
+                    'colourSecondary': '#cd58a5',
+                    'colourTertiary': '#c7499c'
+                },
+                'player_info_blocks': {
+                    'colourPrimary': '#cd58a5',
+                    'colourSecondary': '#c7499c',
+                    'colourTertiary': '#c13a93'
+                },
+                'block_operations': {
+                    'colourPrimary': '#c7499c',
+                    'colourSecondary': '#c13a93',
+                    'colourTertiary': '#bb2c8a'
+                },
+                'game_ui': {
+                    'colourPrimary': '#c13a93',
+                    'colourSecondary': '#bb2c8a',
+                    'colourTertiary': '#b51d81'
+                },
+                'inventory_blocks': {
+                    'colourPrimary': '#82015c',
+                    'colourSecondary': '#7a0e6f',
+                    'colourTertiary': '#6f0e6a'
+                }
+            }
+        });
+
+        workspace.setTheme(Blockly.Themes.Custom);
+
+        // Block descriptions
+        const blockDescriptions = {
+            'input_text': 'Creates a text input field that can be used to get user input',
+            'print': 'Outputs text to the game chat or console',
+            'get_selected_inventory_slot': 'Returns the currently selected inventory slot number',
+            'get_held_item': 'Returns the item currently held by the player',
+            'get_inventory_free_slots': 'Returns the number of empty slots in the player\'s inventory',
+            'get_chest_free_slots': 'Returns the number of empty slots in a chest',
+            'get_chest_item_amount': 'Returns the amount of a specific item in a chest',
+            'has_item': 'Checks if the player has a specific item in their inventory',
+            'remove_item': 'Removes a specific item from the player\'s inventory',
+            'clear_inventory': 'Removes all items from the player\'s inventory',
+            'inventory_is_full': 'Checks if the player\'s inventory is full'
+            // Add descriptions for other blocks here
+        };
+
+        // Favorites system
+        let favorites = JSON.parse(localStorage.getItem('blocklyFavorites') || '[]');
+
+        function toggleFavorite(blockType) {
+            const index = favorites.indexOf(blockType);
+            if (index === -1) {
+                favorites.push(blockType);
+            } else {
+                favorites.splice(index, 1);
+            }
+            localStorage.setItem('blocklyFavorites', JSON.stringify(favorites));
+            updateToolbox();
+        }
+
+        // Search functionality
+        document.getElementById('blockSearch').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const allBlocks = workspace.toolbox_.contents_;
+            
+            allBlocks.forEach(category => {
+                if (category.contents_) {
+                    category.contents_.forEach(block => {
+                        if (block.type_) {
+                            const blockElement = block.element_;
+                            if (blockElement) {
+                                const visible = block.type_.toLowerCase().includes(searchTerm) ||
+                                    (blockDescriptions[block.type_] || '').toLowerCase().includes(searchTerm);
+                                blockElement.style.display = visible ? '' : 'none';
+                            }
+                        }
+                    });
                 }
             });
         });
 
-        function createWindow(url) {
-            const window = document.createElement('div');
-            window.className = 'window';
-            window.style.left = `${Math.random() * window.innerWidth * 0.4}px`;
-            window.style.top = `${Math.random() * window.innerHeight * 0.4}px`;
-            window.style.zIndex = zIndex++;
-
-            const windowId = `window-${Date.now()}`;
-            
-            window.innerHTML = `
-                <div class="window-header">
-                    <div class="close-button"></div>
-                    <div class="set-main-button"></div>
-                    <div class="hide-button"></div>
-                    <div class="window-title">${new URL(url).hostname}</div>
-                </div>
-                <div class="window-content">
-                    <iframe class="window-iframe" src="${url}"></iframe>
-                </div>
-                <div class="resize-handle"></div>
-            `;
-
-            document.body.appendChild(window);
-
-            const header = window.querySelector('.window-header');
-            const closeButton = window.querySelector('.close-button');
-            const setMainButton = window.querySelector('.set-main-button');
-            const resizeHandle = window.querySelector('.resize-handle');
-            const hideButton = window.querySelector('.hide-button');
-            const dockItem = Array.from(document.querySelectorAll('.dock-item')).find(item => item.dataset.url === url);
-
-            closeButton.addEventListener('click', () => {
-                window.remove();
-                if (dockItem) {
-                    dockItem.style.borderBottom = 'none';
-                    hiddenWindows.delete(url);
+        // Add tooltips to blocks
+        workspace.addChangeListener(function(event) {
+            if (event.type === Blockly.Events.BLOCK_CREATE) {
+                const block = workspace.getBlockById(event.blockId);
+                if (block && blockDescriptions[block.type]) {
+                    block.setTooltip(blockDescriptions[block.type]);
                 }
-            });
+            }
+        });
 
-            setMainButton.addEventListener('click', () => {
-                const backgroundFrame = document.getElementById('background-frame');
-                const windowIframe = window.querySelector('.window-iframe');
-                if (backgroundFrame && windowIframe) {
-                    backgroundFrame.src = windowIframe.src;
-                    window.remove();
-                    if (dockItem) {
-                        dockItem.style.borderBottom = 'none';
-                        hiddenWindows.delete(url);
-                    }
-                }
-            });
-
-            hideButton.addEventListener('click', () => {
-                window.style.display = 'none';
-                if (dockItem) {
-                    dockItem.style.borderBottom = '2px solid #ff6600';
-                    hiddenWindows.set(url, window);
-                }
-            });
-            header.addEventListener('mousedown', startDrag);
-            resizeHandle.addEventListener('mousedown', startResize);
-
-            function startDrag(e) {
-                isDragging = true;
-                currentWindow = window;
-                startX = e.clientX;
-                startY = e.clientY;
-                const rect = window.getBoundingClientRect();
-                window.offsetX = startX - rect.left;
-                window.offsetY = startY - rect.top;
-                window.style.cursor = 'move';
-                window.style.zIndex = zIndex++;
+        // Update toolbox to include favorites
+        function updateToolbox() {
+            if (favorites.length > 0) {
+                const favoritesCategory = {
+                    "kind": "category",
+                    "name": "Favorites",
+                    "colour": "#FFD700",
+                    "contents": favorites.map(blockType => ({
+                        "kind": "block",
+                        "type": blockType
+                    }))
+                };
                 
-                document.addEventListener('mousemove', drag);
-                document.addEventListener('mouseup', stopDrag);
-            }
-
-            function drag(e) {
-                if (!isDragging) return;
-                window.style.left = `${e.clientX - window.offsetX}px`;
-                window.style.top = `${e.clientY - window.offsetY}px`;
-            }
-
-            function stopDrag() {
-                isDragging = false;
-                currentWindow = null;
-                document.removeEventListener('mousemove', drag);
-                document.removeEventListener('mouseup', stopDrag);
-            }
-
-            function startResize(e) {
-                isResizing = true;
-                currentWindow = window;
-                startX = e.clientX;
-                startY = e.clientY;
-                startWidth = parseInt(window.style.width || window.offsetWidth);
-                startHeight = parseInt(window.style.height || window.offsetHeight);
-                
-                document.addEventListener('mousemove', resize);
-                document.addEventListener('mouseup', stopResize);
-            }
-
-            function resize(e) {
-                if (!isResizing) return;
-                const newWidth = startWidth + (e.clientX - startX);
-                const newHeight = startHeight + (e.clientY - startY);
-                window.style.width = `${Math.max(newWidth, 700)}px`;
-                window.style.height = `${Math.max(newHeight, 400)}px`;
-            }
-
-            function stopResize() {
-                isResizing = false;
-                currentWindow = null;
-                document.removeEventListener('mousemove', resize);
-                document.removeEventListener('mouseup', stopResize);
+                // Add favorites category to toolbox
+                const toolboxConfig = workspace.toolbox_.getToolboxItems();
+                if (!toolboxConfig.find(cat => cat.name_ === "Favorites")) {
+                    workspace.toolbox_.addCategory(favoritesCategory);
+                }
             }
         }
-        
-// For dock visibility
-let isDockHidden = false;
-function hidedock() {
-    const dock = document.getElementById('dock');
-    const folderButton = document.querySelector('.extra-dock-item[onclick="foldermenu()"]');
-    const extraDock = document.getElementById('extra-dock');
-    if (isDockHidden) {
-        dock.style.display = 'flex';
-        folderButton.style.display = 'flex';
-        extraDock.style.transform = 'scale(1)';
-        isDockHidden = false;
-    } else {
-        dock.style.display = 'none';
-        folderButton.style.display = 'none';
-        extraDock.style.transform = 'scale(0.8)';
-        isDockHidden = true;
-    }
-}
 
-// For folder menu visibility
-let isFolderHidden = false;
-function foldermenu() {
-    const folderMenu = document.getElementById('folder-menu');
-    if (isFolderHidden) {
-        folderMenu.style.display = 'block'; // Changed from visibility to display
-        isFolderHidden = false;
-    } else {
-        folderMenu.style.display = 'none'; // Changed from visibility to display
-        isFolderHidden = true;
-    }
-}
+        // Initialize favorites category
+        updateToolbox();
 
-        function resetiframe(url) {
-    const backgroundFrame = document.getElementById('background-frame');
-    if (url) {
-        backgroundFrame.src = url;
-    } else {
-        backgroundFrame.src = backgroundFrame.src;
-    }
-    resetiframe('https://www.bloxdforge.com/app/assets/1page.html');
-}
-    document.getElementById('loading-video').addEventListener('ended', function() {
-        this.remove();
-    });
+        function splitIntoBoards(text, maxCharsPerBoard = 80, maxCharsPerLine = 16, maxLinesPerBoard = 6) {
+            // Function to wrap a single line to maxCharsPerLine
+            function wrapLine(line) {
+                const wrappedLines = [];
+                for (let i = 0; i < line.length; i += maxCharsPerLine) {
+                    wrappedLines.push(line.slice(i, i + maxCharsPerLine));
+                }
+                return wrappedLines;
+            }
+
+            // Function to check if a function call is complete
+            function isFunctionCallComplete(line) {
+                // Count opening and closing parentheses
+                const openParens = (line.match(/\(/g) || []).length;
+                const closeParens = (line.match(/\)/g) || []).length;
+                return openParens === closeParens;
+            }
+
+            // Split the text into boards of maximum 80 characters and 6 lines
+            const boards = [];
+            let currentBoard = '';
+            let currentBoardLineCount = 0;
+            let currentFunctionCall = [];
+            
+            // Split the text into lines and wrap each line
+            const lines = text.split('\n');
+            const wrappedLines = lines.flatMap(line => wrapLine(line));
+            
+            wrappedLines.forEach(line => {
+                // If we're building a multi-line function call
+                if (currentFunctionCall.length > 0) {
+                    currentFunctionCall.push(line);
+                    
+                    // Check if the function call is complete
+                    if (isFunctionCallComplete(currentFunctionCall.join('\n'))) {
+                        // Add the complete function call to the current board
+                        const functionCallText = currentFunctionCall.join('\n');
+                        
+                        // If adding this function call would exceed board limits, start a new board
+                        if (currentBoardLineCount + currentFunctionCall.length > maxLinesPerBoard || 
+                            (currentBoard && currentBoard.length + functionCallText.length + 1 > maxCharsPerBoard)) {
+                            // Add current board if not empty
+                            if (currentBoard.trim()) {
+                                boards.push(currentBoard.trim());
+                            }
+                            currentBoard = functionCallText;
+                            currentBoardLineCount = currentFunctionCall.length;
+                        } else {
+                            // Add to current board
+                            currentBoard += (currentBoard ? '\n' : '') + functionCallText;
+                            currentBoardLineCount += currentFunctionCall.length;
+                        }
+                        
+                        // Reset function call tracking
+                        currentFunctionCall = [];
+                        return;
+                    }
+                    
+                    // If function call is not complete, continue to next line
+                    return;
+                }
+
+                // Start tracking a potential multi-line function call
+                if (!isFunctionCallComplete(line)) {
+                    currentFunctionCall.push(line);
+                    return;
+                }
+
+                // If adding this line would exceed the board line limit or character limit, start a new board
+                if (currentBoardLineCount >= maxLinesPerBoard || 
+                    (currentBoard && currentBoard.length + line.length + 1 > maxCharsPerBoard)) {
+                    // Trim and add current board if not empty
+                    if (currentBoard.trim()) {
+                        boards.push(currentBoard.trim());
+                    }
+                    currentBoard = line;
+                    currentBoardLineCount = 1;
+                } else {
+                    // Add line to current board with a newline if board is not empty
+                    currentBoard += (currentBoard ? '\n' : '') + line;
+                    currentBoardLineCount++;
+                }
+            });
+            
+            // Add any remaining function call
+            if (currentFunctionCall.length > 0) {
+                const functionCallText = currentFunctionCall.join('\n');
+                currentBoard += (currentBoard ? '\n' : '') + functionCallText;
+                currentBoardLineCount += currentFunctionCall.length;
+            }
+            
+            // Add the last board if not empty
+            if (currentBoard.trim()) {
+                boards.push(currentBoard.trim());
+            }
+            
+            return boards;
+        }
+
+        function generateScript() {
+            let code = "";
+            let boardCount = 0;
+            let hasExceededBoardLimit = false;
+            
+            function getInputValue(block, inputName, defaultValue) {
+                let connectedBlock = block.getInputTargetBlock(inputName);
+                return connectedBlock ? processBlock(connectedBlock) : defaultValue;
+            }
+
+            function processBlock(block) {
+                if (!block) return "";
+                
+                if (!block.type) {
+                    console.error("Block type is null:", block);
+                    return "";
+                }
+
+                let blockCode = "";
+                
+                switch(block.type) {
+                    case "input_text":
+                        const inputText = block.getFieldValue('TEXT');
+                        return `"${inputText}"`;
+                    case "text_block":
+                        const text = block.getFieldValue('TEXT');
+                        blockCode += `// ${text}\n`;
+                        break;
+                    case "log_message":
+                        let msg = getInputValue(block, "MESSAGE", '"Log"');
+                        blockCode += `api.log(${msg});\n`;
+                        break;
+                    case "set_health":
+                        let entity = getInputValue(block, "ENTITY", '0');
+                        let health = getInputValue(block, "HEALTH", '100');
+                        blockCode += `api.setHealth(${entity}, ${health});\n`;
+                        break;
+                    case "apply_health_change":
+                        let entityHealthChange = getInputValue(block, "HEALTH_CHANGE", '0');
+                        let healthChange = getInputValue(block, "ENTITY", '0');
+                        blockCode += `api.applyHealthChange(${entityHealthChange}, ${healthChange});\n`;
+                        break;
+                    case "set_shield_amount":
+                        let entityShield = getInputValue(block, "ENTITY", '0');
+                        let shield = getInputValue(block, "SHIELD", '0');
+                        blockCode += `api.setShieldAmount(${entityShield}, ${shield});\n`;
+                        break;
+                    case "get_shield_amount":
+                        let entityShieldAmount = getInputValue(block, "ENTITY", '0');
+                        blockCode += `api.getShieldAmount(${entityShieldAmount});\n`;
+                        break;
+                    case "show_shop_tutorial":
+                        let playerShopTutorial = getInputValue(block, "PLAYER", '0');
+                        blockCode += `api.showShopTutorial(${playerShopTutorial});\n`;
+                        break;
+                    case "set_camera_direction":
+                        let player = getInputValue(block, "PLAYER", '0');
+                        let direction = getInputValue(block, "DIRECTION", '[0, 0, 0]');
+                        blockCode += `api.setCameraDirection(${player}, ${direction});\n`;
+                        break;
+                    case "set_camera_zoom":
+                        let playerZoom = getInputValue(block, "PLAYER", '0');
+                        let zoom = getInputValue(block, "ZOOM", '1');
+                        blockCode += `api.setCameraZoom(${playerZoom}, ${zoom});\n`;
+                        break;
+                    case "set_player_opacity":
+                        let playerOpacity = getInputValue(block, "PLAYER", '0');
+                        let opacity = getInputValue(block, "OPACITY", '1');
+                        blockCode += `api.setPlayerOpacity(${playerOpacity}, ${opacity});\n`;
+                        break;
+                    case "set_player_opacity_for_one":
+                        let targetPlayer = getInputValue(block, "TARGET_PLAYER", '0');
+                        let opacityForOne = getInputValue(block, "OPACITY", '1');
+                        let viewerPlayer = getInputValue(block, "VIEWER_PLAYER", '0');
+                        blockCode += `api.setPlayerOpacityForOne(${targetPlayer}, ${opacityForOne}, ${viewerPlayer});\n`;
+                        break;
+                    case "set_player_pose":
+                        let playerPose = getInputValue(block, "PLAYER", '0');
+                        let pose = getInputValue(block, "POSE", '0');
+                        blockCode += `api.setPlayerPose(${playerPose}, ${pose});\n`;
+                        break;
+                    case "scale_player_mesh_nodes":
+                        let playerScale = getInputValue(block, "PLAYER", '0');
+                        let scales = getInputValue(block, "SCALES", '[1, 1, 1]');
+                        blockCode += `api.scalePlayerMeshNodes(${playerScale}, ${scales});\n`;
+                        break;
+                    case "update_entity_node_mesh":
+                        let entityUpdate = getInputValue(block, "ENTITY", '0');
+                        let typeUpdate = getInputValue(block, "TYPE", '0');
+                        let nodeUpdate = getInputValue(block, "NODE", '0');
+                        let offsetUpdate = getInputValue(block, "OFFSET", '[0, 0, 0]');
+                        let rotationUpdate = getInputValue(block, "ROTATION", '[0, 0, 0]');
+                        blockCode += `api.updateEntityNodeMesh(${entityUpdate}, ${typeUpdate}, ${nodeUpdate}, ${offsetUpdate}, ${rotationUpdate});\n`;
+                        break;
+                    case "get_block_id":
+                        let x = getInputValue(block, "X", '0');
+                        let y = getInputValue(block, "Y", '0');
+                        let z = getInputValue(block, "Z", '0');
+                        blockCode += `api.getBlockId(${x}, ${y}, ${z});\n`;
+                        break;
+                    case "get_meta_info":
+                        let blockName = getInputValue(block, "BLOCK_NAME", '0');
+                        blockCode += `api.getMetaInfo(${blockName});\n`;
+                        break;
+                    case "set_cant_change_block":
+                        let x1 = getInputValue(block, "X", '0');
+                        let y1 = getInputValue(block, "Y", '0');
+                        let z1 = getInputValue(block, "Z", '0');
+                        let player1 = getInputValue(block, "PLAYER", '0');
+                        blockCode += `api.setCantChangeBlock(${x1}, ${y1}, ${z1}, ${player1});\n`;
+                        break;
+                    case "set_cant_change_block_type":
+                        let blockName1 = getInputValue(block, "BLOCK_NAME", '0');
+                        let player2 = getInputValue(block, "PLAYER", '0');
+                        blockCode += `api.setCantChangeBlockType(${blockName1}, ${player2});\n`;
+                        break;
+                    case "set_walk_through_type":
+                        let blockName2 = getInputValue(block, "BLOCK_NAME", '0');
+                        let player3 = getInputValue(block, "PLAYER", '0');
+                        let disable = getInputValue(block, "DISABLE", 'false');
+                        blockCode += `api.setWalkThroughType(${blockName2}, ${player3}, ${disable});\n`;
+                        break;
+                    case "set_walk_through_rect":
+                        let pos1 = getInputValue(block, "POS1", '[0, 0, 0]');
+                        let pos2 = getInputValue(block, "POS2", '[0, 0, 0]');
+                        let player4 = getInputValue(block, "PLAYER", '0');
+                        let updateType = getInputValue(block, "UPDATE_TYPE", '0');
+                        blockCode += `api.setWalkThroughRect(${pos1}, ${pos2}, ${player4}, ${updateType});\n`;
+                        break;
+                    case "block_name_to_id":
+                        let blockName3 = getInputValue(block, "BLOCK_NAME", '0');
+                        let allowInvalid = getInputValue(block, "ALLOW_INVALID", 'false');
+                        blockCode += `api.blockNameToId(${blockName3}, ${allowInvalid});\n`;
+                        break;
+                    case "block_id_to_name":
+                        let blockId = getInputValue(block, "BLOCK_ID", '0');
+                        blockCode += `api.blockIdToName(${blockId});\n`;
+                        break;
+                    case "block_coord_to_chunk":
+                        let coords = getInputValue(block, "COORDS", '[0, 0, 0]');
+                        blockCode += `api.blockCoordToChunk(${coords});\n`;
+                        break;
+                    case "is_block_in_loaded_chunk":
+                        let x2 = getInputValue(block, "X", '0');
+                        let y2 = getInputValue(block, "Y", '0');
+                        let z2 = getInputValue(block, "Z", '0');
+                        blockCode += `api.isBlockInLoadedChunk(${x2}, ${y2}, ${z2});\n`;
+                        break;
+                    case "is_inside_rect":
+                        let checkCoords = getInputValue(block, "CHECK_COORDS", '[0, 0, 0]');
+                        let pos3 = getInputValue(block, "POS1", '[0, 0, 0]');
+                        let pos4 = getInputValue(block, "POS2", '[0, 0, 0]');
+                        let addOne = getInputValue(block, "ADD_ONE", 'false');
+                        blockCode += `api.isInsideRect(${checkCoords}, ${pos3}, ${pos4}, ${addOne});\n`;
+                        break;
+                    case "chunk_id_to_bot_left_coord":
+                        let chunkId = getInputValue(block, "CHUNK_ID", '0');
+                        blockCode += `api.chunkIdToBotLeftCoord(${chunkId});\n`;
+                        break;
+                    case "reset_can_change_block_type":
+                        let blockName4 = getInputValue(block, "BLOCK_NAME", '0');
+                        let player5 = getInputValue(block, "PLAYER", '0');
+                        blockCode += `api.resetCanChangeBlockType(${blockName4}, ${player5});\n`;
+                        break;
+                    case "raycast_for_block":
+                        let fromPos = getInputValue(block, "FROM_POS", '[0, 0, 0]');
+                        let dirVec = getInputValue(block, "DIR_VEC", '[0, 0, 0]');
+                        blockCode += `api.raycastForBlock(${fromPos}, ${dirVec});\n`;
+                        break;
+                    case "get_selected_inventory_slot":
+                        let playerSlot = getInputValue(block, "PLAYER", '0');
+                        blockCode += `api.getSelectedInventorySlotI(${playerSlot});\n`;
+                        break;
+                    case "get_held_item":
+                        let playerHeld = getInputValue(block, "PLAYER", '0');
+                        blockCode += `api.getHeldItem(${playerHeld});\n`;
+                        break;
+                    case "get_inventory_free_slots":
+                        let playerFree = getInputValue(block, "PLAYER", '0');
+                        blockCode += `api.getInventoryFreeSlotCount(${playerFree});\n`;
+                        break;
+                    case "get_chest_free_slots":
+                        let chestPos = getInputValue(block, "POSITION", '[0,0,0]');
+                        blockCode += `api.getStandardChestFreeSlotCount(${chestPos});\n`;
+                        break;
+                    case "get_chest_item_amount":
+                        let itemName = getInputValue(block, "ITEM_NAME", '"item"');
+                        let chestPosAmount = getInputValue(block, "POSITION", '[0,0,0]');
+                        blockCode += `api.getStandardChestItemAmount(${chestPosAmount}, ${itemName});\n`;
+                        break;
+                    case "has_item":
+                        let playerHas = getInputValue(block, "PLAYER", '0');
+                        let itemNameHas = getInputValue(block, "ITEM_NAME", '"item"');
+                        blockCode += `api.hasItem(${playerHas}, ${itemNameHas});\n`;
+                        break;
+                    case "remove_item":
+                        let playerRemove = getInputValue(block, "PLAYER", '0');
+                        let itemNameRemove = getInputValue(block, "ITEM_NAME", '"item"');
+                        let amountRemove = getInputValue(block, "AMOUNT", '1');
+                        blockCode += `api.removeItemName(${playerRemove}, ${itemNameRemove}, ${amountRemove});\n`;
+                        break;
+                    case "clear_inventory":
+                        let playerClear = getInputValue(block, "PLAYER", '0');
+                        blockCode += `api.clearInventory(${playerClear});\n`;
+                        break;
+                    case "inventory_is_full":
+                        let playerFull = getInputValue(block, "PLAYER", '0');
+                        blockCode += `api.inventoryIsFull(${playerFull});\n`;
+                        break;
+                    default:
+                        console.error("Unknown block type:", block.type);
+                }
+
+                if (block.nextConnection && block.nextConnection.targetBlock()) {
+                    blockCode += processBlock(block.nextConnection.targetBlock());
+                }
+
+                return blockCode;
+            }
+
+            let blocks = workspace.getTopBlocks(true);
+            for (let block of blocks) {
+                code += processBlock(block);
+            }
+
+            // Split code into boards
+            const boards = splitIntoBoards(code);
+
+            // Check board count and set warning if exceeded
+            boardCount = boards.length;
+            hasExceededBoardLimit = boardCount > 50;
+
+            // Prepare output
+            let outputHTML = '';
+            
+            // Add boards
+            boards.forEach((board, index) => {
+                outputHTML += `<div class="script-board" data-board-number="${index + 1}">
+                    <h3>Board ${index + 1}</h3>
+                    <pre>${board}</pre>
+                </div>`;
+            });
+
+            // Add warning if board limit exceeded
+            if (hasExceededBoardLimit) {
+                outputHTML = `
+                <div class="board-limit-warning">
+                    <strong>WARNING:</strong> Script exceeds recommended 50 action board limit. 
+                    Total boards generated: ${boardCount}
+                </div>` + outputHTML;
+            }
+
+            // Update output section
+            document.getElementById('scriptOutput').innerHTML = outputHTML;
+
+            return code;
+        }
+
+        // Add some CSS for board styling
+        const boardStyle = document.createElement('style');
+        boardStyle.textContent = `
+            .script-board {
+                background-color: #2d2d2d;
+                border: 1px solid #444;
+                border-radius: 4px;
+                margin-bottom: 10px;
+                padding: 10px;
+            }
+            .script-board h3 {
+                color: #df84c0;
+                margin-bottom: 5px;
+                font-size: 14px;
+            }
+            .script-board pre {
+                white-space: pre-wrap;
+                word-wrap: break-word;
+                margin: 0;
+                color: #e0e0e0;
+            }
+            .board-limit-warning {
+                background-color: #ff6b6b;
+                color: white;
+                padding: 10px;
+                margin-bottom: 15px;
+                border-radius: 4px;
+            }
+        `;
+        document.head.appendChild(boardStyle);
     </script>
 </body>
 </html>
