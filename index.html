@@ -1,14 +1,138 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Material Web Static Test</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Material Web Clock App</title>
   <script type="module">
     import 'https://esm.run/@material/web/button/filled-button.js';
+    import 'https://esm.run/@material/web/tabs/tabs.js';
+    import 'https://esm.run/@material/web/tabs/primary-tab.js';
+    import 'https://esm.run/@material/web/textfield/outlined-text-field.js';
+    import 'https://esm.run/@material/web/iconbutton/icon-button.js';
   </script>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      display: flex;
+      height: 100vh;
+      background: #121212;
+      color: #fff;
+    }
+
+    aside {
+      width: 200px;
+      background: #1e1e1e;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+    }
+
+    aside md-filled-button {
+      margin-bottom: 10px;
+    }
+
+    main {
+      flex: 1;
+      padding: 2rem;
+    }
+
+    .section {
+      display: none;
+    }
+
+    .active {
+      display: block;
+    }
+
+    .clock-display {
+      font-size: 3rem;
+      margin-top: 2rem;
+    }
+  </style>
 </head>
 <body>
-  <h1>Hello Material Web</h1>
-  <md-filled-button>Click Me</md-filled-button>
+  <aside>
+    <md-filled-button onclick="switchTab('clock')">Clock</md-filled-button>
+    <md-filled-button onclick="switchTab('timer')">Timer</md-filled-button>
+    <md-filled-button onclick="switchTab('stopwatch')">Stopwatch</md-filled-button>
+  </aside>
+  <main>
+    <div id="clock" class="section active">
+      <h2>Clock</h2>
+      <div class="clock-display" id="clockDisplay">--:--:--</div>
+    </div>
+
+    <div id="timer" class="section">
+      <h2>Timer</h2>
+      <md-outlined-text-field type="number" label="Seconds" id="timerInput"></md-outlined-text-field>
+      <br><br>
+      <md-filled-button onclick="startTimer()">Start Timer</md-filled-button>
+      <div class="clock-display" id="timerDisplay">0</div>
+    </div>
+
+    <div id="stopwatch" class="section">
+      <h2>Stopwatch</h2>
+      <md-filled-button onclick="startStopwatch()">Start</md-filled-button>
+      <md-filled-button onclick="stopStopwatch()">Stop</md-filled-button>
+      <md-filled-button onclick="resetStopwatch()">Reset</md-filled-button>
+      <div class="clock-display" id="stopwatchDisplay">0.0</div>
+    </div>
+  </main>
+
+  <script>
+    function switchTab(tabId) {
+      document.querySelectorAll('.section').forEach(section => {
+        section.classList.remove('active');
+      });
+      document.getElementById(tabId).classList.add('active');
+    }
+
+    // Clock
+    function updateClock() {
+      const now = new Date();
+      const timeString = now.toLocaleTimeString();
+      document.getElementById('clockDisplay').textContent = timeString;
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // Timer
+    let timerInterval;
+    function startTimer() {
+      const seconds = parseInt(document.getElementById('timerInput').value);
+      if (isNaN(seconds)) return;
+      let remaining = seconds;
+      document.getElementById('timerDisplay').textContent = remaining;
+      clearInterval(timerInterval);
+      timerInterval = setInterval(() => {
+        remaining--;
+        document.getElementById('timerDisplay').textContent = remaining;
+        if (remaining <= 0) clearInterval(timerInterval);
+      }, 1000);
+    }
+
+    // Stopwatch
+    let stopwatchInterval;
+    let stopwatchTime = 0;
+    function startStopwatch() {
+      if (stopwatchInterval) return;
+      stopwatchInterval = setInterval(() => {
+        stopwatchTime += 0.1;
+        document.getElementById('stopwatchDisplay').textContent = stopwatchTime.toFixed(1);
+      }, 100);
+    }
+
+    function stopStopwatch() {
+      clearInterval(stopwatchInterval);
+      stopwatchInterval = null;
+    }
+
+    function resetStopwatch() {
+      stopwatchTime = 0;
+      document.getElementById('stopwatchDisplay').textContent = '0.0';
+    }
+  </script>
 </body>
 </html>
